@@ -1,0 +1,65 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Use Cases" id="oncocare-use-cases">
+    <mxGraphModel dx="800" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- System boundary -->
+        <mxCell id="system" value="OncoCare" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="240" y="40" width="620" height="600" as="geometry" />
+        </mxCell>
+
+        <!-- Actors -->
+        <mxCell id="actor_paciente" value="Paciente" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="180" width="30" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="actor_psicologo" value="Psicólogo" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="960" y="180" width="30" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Use cases: Paciente -->
+        <mxCell id="uc_criar_relato" value="Criar relato diário" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="80" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_ver_historico" value="Ver histórico de relatos" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="180" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_atualizar_relato" value="Atualizar relato existente" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="280" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Use cases: Psicólogo -->
+        <mxCell id="uc_ver_pacientes" value="Ver pacientes vinculadas" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="130" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc_ler_relatos" value="Ler relatos das pacientes vinculadas" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="230" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Associations: Paciente -->
+        <mxCell id="edge1" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor_paciente" target="uc_criar_relato">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge2" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor_paciente" target="uc_ver_historico">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge3" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor_paciente" target="uc_atualizar_relato">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Associations: Psicólogo -->
+        <mxCell id="edge4" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor_psicologo" target="uc_ver_pacientes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge5" style="edgeStyle=none;html=1;endArrow=none;" edge="1" parent="1" source="actor_psicologo" target="uc_ler_relatos">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

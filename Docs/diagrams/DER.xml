@@ -1,0 +1,65 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="DER" id="oncocare-der">
+    <mxGraphModel dx="900" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- User -->
+        <mxCell id="ent_user" value="&lt;b&gt;User&lt;/b&gt;&lt;hr&gt;PK id&lt;br&gt;email&lt;br&gt;senha_hash&lt;br&gt;papel (paciente | psicologo)&lt;br&gt;criado_em" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="520" y="40" width="240" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- PatientProfile -->
+        <mxCell id="ent_patient" value="&lt;b&gt;PatientProfile&lt;/b&gt;&lt;hr&gt;PK/FK user_id&lt;br&gt;nome&lt;br&gt;data_nascimento&lt;br&gt;FK psicologo_id" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="220" y="240" width="240" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- PsychologistProfile -->
+        <mxCell id="ent_psych" value="&lt;b&gt;PsychologistProfile&lt;/b&gt;&lt;hr&gt;PK/FK user_id&lt;br&gt;nome&lt;br&gt;registro_profissional (CRP)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="820" y="240" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- DiaryEntry -->
+        <mxCell id="ent_entry" value="&lt;b&gt;DiaryEntry&lt;/b&gt;&lt;hr&gt;PK id&lt;br&gt;FK paciente_id&lt;br&gt;texto&lt;br&gt;humor/escala&lt;br&gt;criado_em&lt;br&gt;atualizado_em" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="460" width="240" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- PsychologistNote (futuro) -->
+        <mxCell id="ent_note" value="&lt;b&gt;PsychologistNote&lt;/b&gt; (futuro)&lt;hr&gt;PK id&lt;br&gt;FK paciente_id&lt;br&gt;FK psicologo_id&lt;br&gt;nota&lt;br&gt;criado_em" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="480" y="460" width="240" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Relationships -->
+        <mxCell id="rel_user_patient" value="1..1" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=none;" edge="1" parent="1" source="ent_user" target="ent_patient">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rel_user_psych" value="1..1" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=none;" edge="1" parent="1" source="ent_user" target="ent_psych">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rel_psych_patient" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=none;" edge="1" parent="1" source="ent_psych" target="ent_patient">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="940" y="200" />
+              <mxPoint x="340" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="rel_patient_entry" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=none;" edge="1" parent="1" source="ent_patient" target="ent_entry">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rel_patient_note" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=none;" edge="1" parent="1" source="ent_patient" target="ent_note">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rel_psych_note" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=none;" edge="1" parent="1" source="ent_psych" target="ent_note">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

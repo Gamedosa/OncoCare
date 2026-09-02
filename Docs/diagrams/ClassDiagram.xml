@@ -1,0 +1,85 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Class Diagram" id="oncocare-class-diagram">
+    <mxGraphModel dx="900" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- User -->
+        <mxCell id="cls_user" value="&lt;b&gt;User&lt;/b&gt;&lt;hr&gt;+ id: string&lt;br&gt;+ email: string&lt;br&gt;+ senhaHash: string&lt;br&gt;+ papel: &quot;paciente&quot; | &quot;psicologo&quot;&lt;br&gt;+ criadoEm: Date" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="520" y="40" width="260" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- PatientProfile -->
+        <mxCell id="cls_patient" value="&lt;b&gt;PatientProfile&lt;/b&gt;&lt;hr&gt;+ userId: string&lt;br&gt;+ nome: string&lt;br&gt;+ dataNascimento: Date&lt;br&gt;+ psicologoId: string" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="220" y="260" width="260" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- PsychologistProfile -->
+        <mxCell id="cls_psych" value="&lt;b&gt;PsychologistProfile&lt;/b&gt;&lt;hr&gt;+ userId: string&lt;br&gt;+ nome: string&lt;br&gt;+ registroProfissional: string" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="840" y="260" width="260" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- DiaryEntry -->
+        <mxCell id="cls_entry" value="&lt;b&gt;DiaryEntry&lt;/b&gt;&lt;hr&gt;+ id: string&lt;br&gt;+ pacienteId: string&lt;br&gt;+ texto: string&lt;br&gt;+ humor: number&lt;br&gt;+ criadoEm: Date&lt;br&gt;+ atualizadoEm: Date&lt;br&gt;&lt;hr&gt;+ atualizar(texto: string, humor: number): void" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="480" width="280" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- PsychologistNote (futuro) -->
+        <mxCell id="cls_note" value="&lt;b&gt;PsychologistNote&lt;/b&gt; (futuro)&lt;hr&gt;+ id: string&lt;br&gt;+ pacienteId: string&lt;br&gt;+ psicologoId: string&lt;br&gt;+ nota: string&lt;br&gt;+ criadoEm: Date" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="480" y="480" width="260" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Relationships -->
+        <mxCell id="r1" value="1" style="endArrow=diamondThin;endFill=1;html=1;startArrow=none;" edge="1" parent="1" source="cls_patient" target="cls_user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="r2" value="1" style="endArrow=diamondThin;endFill=1;html=1;startArrow=none;" edge="1" parent="1" source="cls_psych" target="cls_user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="r3" value="1" style="endArrow=open;endFill=0;html=1;startArrow=none;" edge="1" parent="1" source="cls_patient" target="cls_psych">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="350" y="230" />
+              <mxPoint x="970" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="r3label" value="vinculada a" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="r3">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="r4" value="1" style="endArrow=diamondThin;endFill=1;html=1;startArrow=none;" edge="1" parent="1" source="cls_entry" target="cls_patient">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4label" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="r4">
+          <mxGeometry x="-0.9" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="r5" value="1" style="endArrow=open;endFill=0;html=1;startArrow=none;" edge="1" parent="1" source="cls_note" target="cls_patient">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r5label" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="r5">
+          <mxGeometry x="-0.9" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="r6" value="1" style="endArrow=open;endFill=0;html=1;startArrow=none;" edge="1" parent="1" source="cls_note" target="cls_psych">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r6label" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="r6">
+          <mxGeometry x="-0.9" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

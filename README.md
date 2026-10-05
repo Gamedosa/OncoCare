@@ -65,6 +65,14 @@ No MVP o psicólogo tem papel **somente de acompanhamento**, sem ações de escr
 
 Em fase inicial de planejamento e documentação. Ainda não há código de aplicação.
 
+## Decisões confirmadas para o banco
+
+- Banco: PostgreSQL via Supabase.
+- Relação: cada paciente pode ter no máximo um psicólogo vinculado; cada psicólogo pode acompanhar várias pacientes.
+- Credenciais e fluxo de autenticação continuam a definir. A migração inicial usa UUIDs de usuário compatíveis com `auth.uid()`; criação de perfis e vínculos deve ocorrer por operação confiável, nunca por autoatribuição no cliente.
+- A escala e os limites do campo de humor continuam a definir; a migração inicial não presume uma faixa numérica.
+- No MVP, pacientes criam, consultam e editam seus relatos; psicólogos vinculados podem apenas consultar.
+
 ## Roadmap
 
 1. Definir documentação técnica e modelo de dados detalhado.

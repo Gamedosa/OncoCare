@@ -71,6 +71,8 @@ Em fase inicial, com documentação, migrações SQL e coleção Bruno para test
 
 O suporte de banco e armazenamento para áudio está definido na migração incremental; gravação e reprodução no app ainda não foram implementadas. Veja o [fluxo de áudio e validação](Docs/audio.md).
 
+As telas, fluxos e estados do aplicativo para o protótipo no Figma estão em [Docs/telas.md](Docs/telas.md).
+
 ## Decisões confirmadas para o banco
 
 - Banco: PostgreSQL via Supabase.

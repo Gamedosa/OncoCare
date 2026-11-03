@@ -52,6 +52,11 @@ describe('diary repository audio compatibility', () => {
     expect(mockUpdate).toHaveBeenCalledWith({ content: 'Texto', mood_score: 4, audio_object_id: ID });
   });
 
+  it('explicitly clears the attachment without writing the derived audio path', async () => {
+    await updateEntry(ID, draft, null);
+    expect(mockUpdate).toHaveBeenCalledWith({ content: 'Texto', mood_score: 4, audio_object_id: null });
+  });
+
   it('reconciles by the server-derived audio path using RLS', async () => {
     await getEntryByAudioPath(`${PATIENT}/${ID}.m4a`);
     expect(mockEq).toHaveBeenCalledWith('audio_path', `${PATIENT}/${ID}.m4a`);

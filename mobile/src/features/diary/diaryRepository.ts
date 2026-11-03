@@ -50,7 +50,7 @@ export async function getEntryByAudioPath(path: string): Promise<DiaryEntry | nu
   return data ? entryRowSchema.parse(data) : null;
 }
 
-export async function updateEntry(entryId: string, draft: EntryDraft, audioObjectId?: string): Promise<DiaryEntry> {
+export async function updateEntry(entryId: string, draft: EntryDraft, audioObjectId?: string | null): Promise<DiaryEntry> {
   const { data, error } = await supabase
     .from('diary_entries')
     .update({

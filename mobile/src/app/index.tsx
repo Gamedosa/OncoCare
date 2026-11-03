@@ -1,13 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Redirect } from 'expo-router';
+
+import { useAuth } from '@/features/auth/AuthProvider';
 
 export default function Index() {
-  return (
-    <View style={styles.container}>
-      <Text>OncoCare</Text>
-    </View>
-  );
+  const auth = useAuth();
+  if (auth.status !== 'signedIn') return <Redirect href="/login" />;
+  return <Redirect href={auth.profile.role === 'patient' ? '/patient' : '/psychologist'} />;
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-});

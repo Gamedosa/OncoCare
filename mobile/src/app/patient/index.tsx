@@ -1,4 +1,3 @@
-import { SignedInHome } from '@/features/auth/SignedInHome';
+import { PatientHistoryScreen } from '@/features/diary/screens/PatientHistoryScreen';
 
-// Temporary landing page until the role-specific screens are implemented.
-export default SignedInHome;
+export default PatientHistoryScreen;

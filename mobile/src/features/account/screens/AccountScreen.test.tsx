@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { fireEvent, screen } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 import * as authRepository from '@/features/auth/authRepository';
 import type { Profile } from '@/features/auth/schemas';
@@ -47,7 +47,10 @@ describe('AccountScreen', () => {
 
   it('does not look up a link for psychologists and signs out', async () => {
     mockProfile = { id: '00000000-0000-4000-8000-000000000009', role: 'psychologist', displayName: null };
-    signOut.mockResolvedValue(undefined);
+    let completeSignOut: (() => void) | undefined;
+    signOut.mockImplementation(() => new Promise<void>((resolve) => {
+      completeSignOut = resolve;
+    }));
     await renderWithQuery(<AccountScreen />);
 
     expect(screen.getByText('Psicólogo(a)')).toBeTruthy();
@@ -57,5 +60,13 @@ describe('AccountScreen', () => {
 
     await fireEvent.press(screen.getByRole('button', { name: 'Sair' }));
     expect(signOut).toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByRole('button', { busy: true })).toBeTruthy());
+    await act(async () => {
+      completeSignOut?.();
+    });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Sair' }).props.accessibilityState).toMatchObject({
+      busy: false,
+      disabled: false,
+    }));
   });
 });

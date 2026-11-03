@@ -15,6 +15,10 @@
 
 All requests target the development project. Use only synthetic test data.
 
+## Diary audio
+
+The existing text requests remain valid. After applying the audio migration to the development project, follow the [audio API flow and validation checklist](../../Docs/audio.md) to upload a synthetic audio file, attach its returned ID to an entry, and test authenticated downloads and access restrictions. Audio requests require the user's JWT, never a `service_role` key. No audio binary fixtures or real recordings are included.
+
 ## Reset patient test logins
 
 If a patient test account's credentials do not work, set new unique values for `PATIENT1_EMAIL`, `PATIENT1_PASSWORD`, `PATIENT2_EMAIL`, and `PATIENT2_PASSWORD` in the local `.env`. Add the legacy `service_role` key for `OncoCare-Dev` as `SUPABASE_SERVICE_ROLE_KEY`, then run:

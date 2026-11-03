@@ -20,15 +20,15 @@
         </mxCell>
 
         <!-- Use cases: Paciente -->
-        <mxCell id="uc_criar_relato" value="Criar relato diário" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="uc_criar_relato" value="Criar relato diário (texto, áudio ou ambos)" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="300" y="80" width="180" height="60" as="geometry" />
         </mxCell>
 
-        <mxCell id="uc_ver_historico" value="Ver histórico de relatos" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="uc_ver_historico" value="Ver histórico e ouvir áudios próprios" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="300" y="180" width="180" height="60" as="geometry" />
         </mxCell>
 
-        <mxCell id="uc_atualizar_relato" value="Atualizar relato existente" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="uc_atualizar_relato" value="Atualizar relato; substituir/remover áudio" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="300" y="280" width="180" height="60" as="geometry" />
         </mxCell>
 
@@ -37,7 +37,7 @@
           <mxGeometry x="580" y="130" width="200" height="60" as="geometry" />
         </mxCell>
 
-        <mxCell id="uc_ler_relatos" value="Ler relatos das pacientes vinculadas" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="uc_ler_relatos" value="Ler e ouvir relatos das pacientes vinculadas" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="580" y="230" width="200" height="60" as="geometry" />
         </mxCell>
 

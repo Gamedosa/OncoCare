@@ -21,8 +21,8 @@
         </mxCell>
 
         <!-- DiaryEntry -->
-        <mxCell id="cls_entry" value="&lt;b&gt;DiaryEntry&lt;/b&gt;&lt;hr&gt;+ id: string&lt;br&gt;+ pacienteId: string&lt;br&gt;+ texto: string&lt;br&gt;+ humor: number&lt;br&gt;+ criadoEm: Date&lt;br&gt;+ atualizadoEm: Date&lt;br&gt;&lt;hr&gt;+ atualizar(texto: string, humor: number): void" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
-          <mxGeometry x="60" y="480" width="280" height="180" as="geometry" />
+        <mxCell id="cls_entry" value="&lt;b&gt;DiaryEntry&lt;/b&gt;&lt;hr&gt;+ id: string&lt;br&gt;+ pacienteId: string&lt;br&gt;+ texto: string?&lt;br&gt;+ audioObjectId: string? (unico)&lt;br&gt;+ audioPath: string? (servidor)&lt;br&gt;+ humor: number&lt;br&gt;+ criadoEm: Date&lt;br&gt;+ atualizadoEm: Date&lt;hr&gt;Exige texto ou audio; max. 1 audio / 10 MiB&lt;br&gt;+ atualizar(texto: string?, audioObjectId: string?, humor: number): void" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="480" width="300" height="260" as="geometry" />
         </mxCell>
 
         <!-- PsychologistNote (futuro) -->

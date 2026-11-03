@@ -45,5 +45,5 @@ O projeto esta em fase de planejamento e ainda nao possui codigo de aplicacao. C
 	```
 
 - `supabase init`, `supabase login` e `supabase link` normalmente precisam ser executados uma vez. O volume `onco-supabase-cli` preserva a sessao da CLI; o bind mount preserva os arquivos do projeto e o vinculo local.
-- Use sempre o mesmo volume Docker e confirme o projeto vinculado com `supabase projects list` antes de comandos remotos. Rode `supabase db push --dry-run` e revise a migration pendente antes de aplicar.
+- Use sempre o mesmo volume Docker e confirme o projeto vinculado com `supabase projects list` antes de comandos remotos. Rode `supabase db push --remote --dry-run` e revise a migration pendente antes de aplicar. A partir da CLI 3, `db push` sem `--remote` usa o banco local (`127.0.0.1:54322`).
 - Nunca aplique migrations em producao sem autorizacao explicita. Nao grave tokens, senhas ou chaves em arquivos versionados nem os compartilhe em conversas.

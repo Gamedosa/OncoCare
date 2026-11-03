@@ -5,6 +5,7 @@ import { downloadAudio, MAX_AUDIO_BYTES } from './audioRepository';
 const mockDownload = jest.fn<(path: string) => Promise<{ data: Blob | null; error: Error | null }>>();
 const mockFrom = jest.fn((_bucket: string) => ({ download: mockDownload }));
 jest.mock('@/shared/supabase/client', () => ({ supabase: { storage: { from: (bucket: string) => mockFrom(bucket) } } }));
+jest.mock('expo-crypto', () => ({ randomUUID: () => '00000000-0000-4000-8000-000000000010' }));
 
 describe('downloadAudio', () => {
   beforeEach(() => {

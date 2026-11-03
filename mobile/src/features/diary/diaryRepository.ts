@@ -31,20 +31,32 @@ export async function getEntry(entryId: string): Promise<DiaryEntry | null> {
   return data ? entryRowSchema.parse(data) : null;
 }
 
-export async function createEntry(patientId: string, draft: EntryDraft): Promise<DiaryEntry> {
+export async function createEntry(patientId: string, draft: EntryDraft, audioObjectId?: string): Promise<DiaryEntry> {
   const { data, error } = await supabase
     .from('diary_entries')
-    .insert({ patient_id: patientId, content: draft.content, mood_score: draft.mood })
+    .insert({
+      patient_id: patientId, content: draft.content, mood_score: draft.mood,
+      ...(audioObjectId ? { audio_object_id: audioObjectId } : {}),
+    })
     .select(ENTRY_COLUMNS)
     .single();
   if (error) throw error;
   return entryRowSchema.parse(data);
 }
 
-export async function updateEntry(entryId: string, draft: EntryDraft): Promise<DiaryEntry> {
+export async function getEntryByAudioPath(path: string): Promise<DiaryEntry | null> {
+  const { data, error } = await supabase.from('diary_entries').select(ENTRY_COLUMNS).eq('audio_path', path).maybeSingle();
+  if (error) throw error;
+  return data ? entryRowSchema.parse(data) : null;
+}
+
+export async function updateEntry(entryId: string, draft: EntryDraft, audioObjectId?: string): Promise<DiaryEntry> {
   const { data, error } = await supabase
     .from('diary_entries')
-    .update({ content: draft.content, mood_score: draft.mood })
+    .update({
+      content: draft.content, mood_score: draft.mood,
+      ...(audioObjectId === undefined ? {} : { audio_object_id: audioObjectId }),
+    })
     .eq('id', entryId)
     .select(ENTRY_COLUMNS)
     .single();

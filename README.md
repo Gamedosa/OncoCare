@@ -13,14 +13,14 @@ Oferecer um espaço seguro e simples para que pacientes registrem seus sentiment
 
 ## Funcionalidades principais (MVP)
 
-- [ ] Cadastro/login de pacientes e psicólogos (perfis distintos).
-- [ ] Vínculo entre paciente e psicólogo responsável.
-- [ ] Criação de relatos diários (texto, áudio ou ambos + humor/escala de bem-estar).
+- [ ] Cadastro/login de pacientes e psicólogos (perfis distintos). *Login pronto; cadastro a definir.*
+- [ ] Vínculo entre paciente e psicólogo responsável. *Feito manualmente no banco; fluxo a definir.*
+- [ ] Criação de relatos diários (texto, áudio ou ambos + humor/escala de bem-estar). *Texto e humor provisório prontos; áudio pendente.*
 - [ ] Envio e reprodução de um áudio por relato (até 10 MiB, sem transcrição automática).
-- [ ] Atualização de relatos existentes pela paciente.
-- [ ] Histórico de relatos da paciente.
-- [ ] Psicólogo visualiza lista de pacientes vinculadas (somente leitura).
-- [ ] Psicólogo lê e ouve os relatos das pacientes vinculadas (somente leitura).
+- [x] Atualização de relatos existentes pela paciente.
+- [x] Histórico de relatos da paciente.
+- [x] Psicólogo visualiza lista de pacientes vinculadas (somente leitura).
+- [ ] Psicólogo lê e ouve os relatos das pacientes vinculadas (somente leitura). *Leitura pronta; áudio pendente.*
 - [ ] Psicólogo adicionar notas no perfil da paciente (futuro, pós-MVP).
 - [ ] Notificações/alertas para o psicólogo em casos de sinais preocupantes (futuro).
 
@@ -44,11 +44,11 @@ No MVP o psicólogo tem papel **somente de acompanhamento**, sem ações de escr
 
 | Camada | Escolha | Observações |
 |---|---|---|
-| App | React Native + TypeScript | Multiplataforma (iOS/Android), tipagem estática para maior segurança em dados sensíveis. |
-| Backend/API | A definir (Node.js/NestJS ou Supabase como BaaS) | Ver seção de banco de dados. |
+| App | Expo (React Native) + TypeScript | Android, iOS e web a partir do mesmo código. Expo Router, TanStack Query e zod. Ver [mobile/README.md](mobile/README.md). |
+| Backend/API | Supabase como BaaS | O app acessa o Supabase diretamente; a autorização fica no RLS. Sem API própria no MVP. |
 | Banco de dados | PostgreSQL (via Supabase) | Relacional, para suportar vínculos e consultas entre paciente/psicólogo/relatos. |
 | Arquivos de áudio | Supabase Storage | Bucket privado com RLS, sem URLs públicas. |
-| Autenticação | Supabase Auth (ou similar) | Suporte a diferentes papéis (paciente/psicólogo). |
+| Autenticação | Supabase Auth | E-mail e senha; o papel (paciente/psicólogo) vem de `profiles`. |
 
 ## Modelo de dados (rascunho inicial)
 
@@ -67,7 +67,7 @@ No MVP o psicólogo tem papel **somente de acompanhamento**, sem ações de escr
 
 ## Status do projeto
 
-Em fase inicial, com documentação, migrações SQL e coleção Bruno para testar a API. Ainda não há código de aplicação.
+Em desenvolvimento. O app em [mobile/](mobile/) (Expo) já tem login com guardas por papel, os relatos de texto da paciente (histórico, novo relato, detalhe e edição), as telas somente leitura do psicólogo e a tela de conta. Veja como rodar e a arquitetura em [mobile/README.md](mobile/README.md).
 
 O suporte de banco e armazenamento para áudio está definido na migração incremental; gravação e reprodução no app ainda não foram implementadas. Veja o [fluxo de áudio e validação](Docs/audio.md).
 

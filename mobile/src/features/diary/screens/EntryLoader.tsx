@@ -7,10 +7,10 @@ import { Button, colors, EmptyState, ErrorState, Header, Screen } from '@/shared
 import { useEntry } from '../hooks';
 import type { DiaryEntry } from '../schemas';
 
-type Props = { title: string; children: (entry: DiaryEntry) => ReactNode };
+type Props = { title: string; notFound?: ReactNode; children: (entry: DiaryEntry) => ReactNode };
 
 // Shared loading / not found / error handling for screens that show one entry.
-export function EntryLoader({ title, children }: Props) {
+export function EntryLoader({ title, notFound, children }: Props) {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const query = useEntry(id);
@@ -20,6 +20,7 @@ export function EntryLoader({ title, children }: Props) {
   let body: ReactNode;
   if (query.isPending) body = <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Carregando relato" />;
   else if (query.isError) body = <ErrorState title="Não foi possível carregar o relato." onRetry={() => void query.refetch()} />;
+  else if (notFound) body = notFound;
   else
     body = (
       <EmptyState

@@ -30,6 +30,7 @@ O projeto esta em fase de planejamento e ainda nao possui codigo de aplicacao. C
 - Ao adicionar codigo, siga os padroes ja existentes no repositorio. Como ainda nao ha codigo de aplicacao, proponha a estrutura minima necessaria em vez de presumir convencoes.
 - Valide mudancas com os testes ou verificacoes disponiveis e informe claramente o que nao foi possivel validar.
 - Mantenha a documentacao atualizada quando uma decisao de produto ou tecnica for tomada.
+- Trabalhe com commits pequenos e de contexto unico (ex.: scaffold, configuracao, uma feature, docs), usando Conventional Commits (`feat`, `fix`, `chore`, `docs`, com escopo quando fizer sentido, ex.: `feat(mobile): ...`). Nao misture contextos diferentes no mesmo commit.
 
 ## Supabase CLI no WSL via Docker
 

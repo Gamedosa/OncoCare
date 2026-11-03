@@ -15,7 +15,7 @@ Oferecer um espaço seguro e simples para que pacientes registrem seus sentiment
 
 - [ ] Cadastro/login de pacientes e psicólogos (perfis distintos). *Login pronto; cadastro a definir.*
 - [ ] Vínculo entre paciente e psicólogo responsável. *Feito manualmente no banco; fluxo a definir.*
-- [ ] Criação de relatos diários (texto, áudio ou ambos + humor/escala de bem-estar). *Texto e humor provisório prontos; áudio pendente.*
+- [x] Criação de relatos diários (texto, áudio ou ambos + humor/escala de bem-estar). *Humor provisório; gravação/envio ainda requerem validação em aparelhos reais.*
 - [ ] Envio e reprodução de um áudio por relato (até 10 MiB, sem transcrição automática).
 - [x] Atualização de relatos existentes pela paciente.
 - [x] Histórico de relatos da paciente.
@@ -69,7 +69,7 @@ No MVP o psicólogo tem papel **somente de acompanhamento**, sem ações de escr
 
 Em desenvolvimento. O app em [mobile/](mobile/) (Expo) já tem login com guardas por papel, os relatos de texto da paciente (histórico, novo relato, detalhe e edição), as telas somente leitura do psicólogo e a tela de conta. Veja como rodar e a arquitetura em [mobile/README.md](mobile/README.md).
 
-O suporte de banco e armazenamento para áudio está definido na migração incremental. O player já está integrado ao detalhe dos dois papéis, com download autenticado; gravação e envio pelo app ainda estão pendentes, assim como a validação do player em aparelhos reais. Veja o [fluxo de áudio e validação](Docs/audio.md).
+O player está integrado ao detalhe dos dois papéis, com download autenticado. A paciente pode gravar e enviar áudio em novos relatos ou adicioná-lo a relatos de texto; substituição/remoção de áudio salvo e validação do fluxo completo em aparelhos/Storage reais continuam pendentes. Veja o [fluxo de áudio e validação](Docs/audio.md).
 
 As telas, fluxos e estados do aplicativo para o protótipo no Figma estão em [Docs/telas.md](Docs/telas.md).
 

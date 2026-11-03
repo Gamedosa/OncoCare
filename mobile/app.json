@@ -29,8 +29,9 @@
       [
         "expo-audio",
         {
-          "microphonePermission": false,
-          "recordAudioAndroid": false,
+          "microphonePermission": "Permita que o OncoCare use o microfone para gravar seu relato de áudio.",
+          "recordAudioAndroid": true,
+          "enableBackgroundRecording": false,
           "enableBackgroundPlayback": false
         }
       ]

@@ -4,6 +4,7 @@ import { fireEvent, screen } from '@testing-library/react-native';
 import { renderWithQuery } from '@/shared/query/testing';
 
 import type { DiaryEntry } from '../schemas';
+import type { RecordedAudio } from '@/features/audio/recordingFile';
 import { EntryForm } from './EntryForm';
 
 const mockBack = jest.fn();
@@ -11,6 +12,26 @@ const mockAllowLeave = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: mockBack }),
   usePreventRemove: () => mockAllowLeave,
+}));
+const mockRecording: RecordedAudio = {
+  uri: 'file:///synthetic.m4a', bytes: new ArrayBuffer(2),
+  contentType: 'audio/mp4', extension: 'm4a', dispose: jest.fn(),
+};
+jest.mock('@/features/audio/components/RecordingInput', () => {
+  const { Button, View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    RecordingInput: ({ onChange, onBusyChange }: {
+      onChange: (audio: RecordedAudio) => void; onBusyChange: (busy: boolean) => void;
+    }) => (
+      <View>
+        <Button title="Preparar áudio sintético" onPress={() => onChange(mockRecording)} />
+        <Button title="Iniciar gravação sintética" onPress={() => onBusyChange(true)} />
+      </View>
+    ),
+  };
+});
+jest.mock('@/features/audio/saveRecording', () => ({
+  AudioSaveRecoveryError: class extends Error {},
 }));
 
 const savedEntry: DiaryEntry = {
@@ -84,5 +105,22 @@ describe('EntryForm', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
 
     expect(onSave).toHaveBeenCalledWith({ content: null, mood: 4 });
+  });
+
+  it('saves an audio-only draft with the recording bytes', async () => {
+    const onSave = jest.fn<(draft: unknown, audio?: RecordedAudio) => Promise<DiaryEntry>>().mockResolvedValue(savedEntry);
+    await renderWithQuery(<EntryForm title="Novo relato" saving={false} saveError={null} onSave={onSave} />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Preparar áudio sintético' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+    expect(onSave).toHaveBeenCalledWith({ content: null, mood: null }, mockRecording);
+  });
+
+  it('disables saving while recording even when text is present', async () => {
+    const onSave = jest.fn<(draft: unknown) => Promise<DiaryEntry>>();
+    await renderWithQuery(<EntryForm title="Novo relato" saving={false} saveError={null} onSave={onSave} />);
+    await fireEvent.changeText(screen.getByLabelText('Quer contar mais?'), 'Texto');
+    await fireEvent.press(screen.getByRole('button', { name: 'Iniciar gravação sintética' }));
+    expect(screen.getByRole('button', { name: 'Salvar' }).props.accessibilityState).toMatchObject({ disabled: true });
+    expect(onSave).not.toHaveBeenCalled();
   });
 });

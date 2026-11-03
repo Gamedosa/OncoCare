@@ -7,7 +7,7 @@
 - Formatos: M4A (`audio/mp4`, `audio/x-m4a`), MP3 (`audio/mpeg`), WAV (`audio/wav`, `audio/x-wav`), OGG (`audio/ogg`) e WebM (`audio/webm`).
 - Sem transcrição automática ou processamento por serviços externos.
 - Apenas a paciente envia, substitui ou remove seus áudios. O psicólogo atualmente vinculado pode ouvi-los, sem alterar arquivos ou relatos.
-- Banco e Storage estão preparados; o app já possui player no detalhe dos dois papéis. Gravação, permissão de microfone e envio ainda não estão implementados.
+- Banco e Storage estão preparados; o app possui player no detalhe dos dois papéis e gravação/envio pela paciente. É possível gravar um novo relato ou adicionar áudio a um relato de texto. Substituição e remoção de áudios já salvos ainda estão pendentes no app.
 
 ## Banco e armazenamento
 
@@ -94,6 +94,19 @@ Usar a chave publicável e o JWT da pessoa autenticada, nunca `service_role` no 
    Com Supabase JS: `storage.from('diary-audio').remove([oldPath])`. Conferir o resultado: operações bloqueadas por RLS podem retornar zero arquivos/linhas sem erro de autorização explícito.
 
 Upload e escrita do relato não são uma transação única. Se a escrita falhar, tentar remover o novo arquivo pela API, informando falhas de limpeza e permitindo nova tentativa. Arquivos ainda não associados são visíveis somente à paciente; não ficam disponíveis ao psicólogo. Não há limpeza automática implementada. Retenção e limpeza operacional desses arquivos precisam ser definidas antes do uso real.
+
+### Gravação e envio no app
+
+- Permissão de microfone solicitada somente após "Gravar áudio"; sem permissão, o relato de texto continua disponível.
+- Expo Audio com preset de alta qualidade: M4A/AAC no Android/iOS e WebM no navegador (HTTPS/localhost e suporte a WebM necessários).
+- A paciente pode finalizar, cancelar, ouvir a prévia e descartar antes do envio. Texto e humor são opcionais quando houver áudio.
+- Tamanho máximo conferido sobre os bytes finais antes do upload: até 10.485.760 bytes. Não há limite de duração de produto definido.
+- A gravação em andamento é cancelada quando o app vai para segundo plano. A gravação fica temporariamente na memória/cache do dispositivo e é removida ao descartar ou sair da tela. Falhas de limpeza exibem aviso; encerramento abrupto ainda pode deixar resíduos.
+- "Salvar" envia bytes binários para um UUID novo, com `upsert: false` e sem cache HTTP, e associa somente `audio_object_id`; o servidor deriva `audio_path`. Durante o envio há indicador de carregamento e aviso para aguardar na tela.
+- Falhas de upload também tentam limpar o caminho reservado, pois a requisição pode ter alcançado o servidor. Quando a API de remoção retorna zero arquivos, ausência só é aceita após conferir o usuário autenticado, seu papel paciente e a listagem do próprio caminho.
+- Se a resposta de escrita se perder, o app consulta o relato pelo caminho de áudio (ou pelo ID na edição) antes de apagar o arquivo. Um relato já confirmado é reutilizado, evitando nova criação. Se não conseguir confirmar/limpar, a tela avisa e a próxima tentativa reconcilia a operação antes de outro upload; edição do rascunho fica bloqueada nesse estado.
+- A recuperação de operações pendentes vive apenas na tela atual. Após sair/encerrar o processo, conferir o histórico antes de reenviar. Recuperação persistente, cancelamento do upload em andamento e progresso percentual ainda não foram implementados.
+- Ao editar um relato que já tem áudio, o áudio é preservado. Substituição/remoção são outro incremento, seguindo a ordem de operações acima.
 
 ## Privacidade e decisões pendentes
 

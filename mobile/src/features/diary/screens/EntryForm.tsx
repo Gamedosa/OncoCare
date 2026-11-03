@@ -6,6 +6,9 @@ import { isNetworkError } from '@/shared/errors';
 import { Button, colors, ConfirmDialog, font, Header, Notice, Screen, spacing, TextField } from '@/shared/ui';
 
 import { MoodSelector } from '../components/MoodSelector';
+import { RecordingInput } from '@/features/audio/components/RecordingInput';
+import type { RecordedAudio } from '@/features/audio/recordingFile';
+import { AudioSaveRecoveryError } from '@/features/audio/saveRecording';
 import { entryDraftSchema, type DiaryEntry, type EntryDraft } from '../schemas';
 
 type Props = {
@@ -13,7 +16,7 @@ type Props = {
   entry?: DiaryEntry;
   saving: boolean;
   saveError: unknown;
-  onSave: (draft: EntryDraft) => Promise<DiaryEntry>;
+  onSave: (draft: EntryDraft, audio?: RecordedAudio) => Promise<DiaryEntry>;
 };
 
 export function EntryForm({ title, entry, saving, saveError, onSave }: Props) {
@@ -23,14 +26,20 @@ export function EntryForm({ title, entry, saving, saveError, onSave }: Props) {
   const [mood, setMood] = useState<number | null>(initial.current.mood);
   const [validationError, setValidationError] = useState<string>();
   const [pendingLeave, setPendingLeave] = useState<(() => void) | null>(null);
+  const [audio, setAudio] = useState<RecordedAudio | null>(null);
+  const [recordingBusy, setRecordingBusy] = useState(false);
 
-  const hasAudio = entry?.hasAudio ?? false;
-  const dirty = content !== initial.current.content || mood !== initial.current.mood;
+  const hasAudio = !!audio || (entry?.hasAudio ?? false);
+  const dirty = !!audio || recordingBusy || content !== initial.current.content || mood !== initial.current.mood;
   const canSave = hasAudio || content.trim().length > 0;
+  const recovering = saveError instanceof AudioSaveRecoveryError;
 
-  const allowLeave = usePreventRemove(dirty, ({ repeat }) => setPendingLeave(() => repeat));
+  const allowLeave = usePreventRemove(dirty || saving, ({ repeat }) => {
+    if (!saving) setPendingLeave(() => repeat);
+  });
 
   const save = async () => {
+    if (saving || recordingBusy) return;
     const parsed = entryDraftSchema({ hasAudio }).safeParse({ content, mood });
     if (!parsed.success) {
       setValidationError(parsed.error.issues[0]?.message);
@@ -38,7 +47,8 @@ export function EntryForm({ title, entry, saving, saveError, onSave }: Props) {
     }
     setValidationError(undefined);
     try {
-      await onSave(parsed.data);
+      if (audio) await onSave(parsed.data, audio);
+      else await onSave(parsed.data);
       allowLeave();
       router.back();
     } catch {
@@ -47,12 +57,12 @@ export function EntryForm({ title, entry, saving, saveError, onSave }: Props) {
   };
 
   return (
-    <Screen header={<Header title={title} onBack={() => router.back()} />}>
+    <Screen header={<Header title={title} onBack={() => { if (!saving) router.back(); }} />}>
       <View style={styles.section}>
         <Text accessibilityRole="header" style={styles.question}>
           Como você está hoje?
         </Text>
-        <MoodSelector value={mood} onChange={setMood} />
+        <MoodSelector value={mood} onChange={(value) => { if (!saving && !recovering) setMood(value); }} />
       </View>
 
       <TextField
@@ -65,20 +75,29 @@ export function EntryForm({ title, entry, saving, saveError, onSave }: Props) {
           setValidationError(undefined);
         }}
         multiline
+        editable={!saving && !recovering}
         error={validationError}
       />
 
+      {!entry?.hasAudio ? (
+        <RecordingInput disabled={saving || recovering} onChange={setAudio} onBusyChange={setRecordingBusy} />
+      ) : (
+        <Notice>O áudio deste relato será preservado. Substituição e remoção serão disponibilizadas em outro incremento.</Notice>
+      )}
+
+      {saving && audio ? <Notice>Enviando o áudio e confirmando o relato. Aguarde nesta tela.</Notice> : null}
+
       {saveError ? (
         <Notice tone={isNetworkError(saveError) ? 'warning' : 'error'}>
-          {isNetworkError(saveError)
+          {saveError instanceof AudioSaveRecoveryError ? saveError.message : isNetworkError(saveError)
             ? 'Você está sem internet. Seu texto continua aqui — tente salvar quando a conexão voltar.'
             : 'Não foi possível salvar o relato. Tente novamente.'}
         </Notice>
       ) : null}
 
-      <Text style={styles.privacy}>Seu psicólogo vinculado poderá ler este relato.</Text>
+      <Text style={styles.privacy}>Seu psicólogo vinculado poderá ler e ouvir este relato.</Text>
 
-      <Button onPress={save} loading={saving} disabled={!canSave}>
+      <Button onPress={save} loading={saving} disabled={!canSave || recordingBusy}>
         Salvar
       </Button>
       {!canSave ? <Text style={styles.hint}>Escreva algo para salvar.</Text> : null}
@@ -86,7 +105,9 @@ export function EntryForm({ title, entry, saving, saveError, onSave }: Props) {
       <ConfirmDialog
         visible={pendingLeave !== null}
         title="Descartar alterações?"
-        message="O que você escreveu ainda não foi salvo."
+        message={saveError instanceof AudioSaveRecoveryError
+          ? 'O salvamento ainda não foi confirmado. Ao sair, confira seu histórico antes de criar outro relato.'
+          : 'Seu texto e sua gravação ainda não foram salvos.'}
         confirmLabel="Descartar"
         cancelLabel="Continuar escrevendo"
         destructive

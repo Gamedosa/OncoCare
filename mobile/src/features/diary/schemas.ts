@@ -25,6 +25,7 @@ export const entryRowSchema = z
     content: row.content,
     mood: row.mood_score,
     hasAudio: row.audio_path !== null,
+    audioPath: row.audio_path,
     createdAt: parseTimestamp(row.created_at),
     updatedAt: parseTimestamp(row.updated_at),
   }));

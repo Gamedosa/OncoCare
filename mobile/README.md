@@ -47,6 +47,7 @@ src/
     diary/                relatos: domínio, repositório, hooks, componentes e telas da paciente
     patients/             pacientes vinculadas e telas somente leitura do psicólogo
     account/              tela de conta dos dois papéis
+    audio/                download autenticado, player e cópias temporárias de áudio
   shared/
     supabase/             cliente, sessão em SecureStore (nativo) e tipos gerados
     query/                React Query provider e utilitários de teste
@@ -68,7 +69,10 @@ Fluxo de dados: **tela → hooks (TanStack Query) → repositório → Supabase*
 | Paciente: histórico, novo relato, detalhe, edição | Pronto (texto + humor provisório 1–5). |
 | Psicólogo: pacientes vinculadas, relatos e detalhe somente leitura | Pronto. |
 | Conta (os dois papéis) | Pronto. O texto de consentimento completo está pendente. |
-| Áudio (gravar, enviar, ouvir) | Pendente. O banco e o bucket já existem. |
+| Áudio: ouvir | Player integrado ao detalhe dos dois papéis; download autenticado sob demanda, reproduzir/pausar e nova tentativa. Validação em aparelhos ainda pendente. |
+| Áudio: gravar e enviar | Pendente. O banco e o bucket já existem. |
 | Consentimento, escala de humor, cadastro/vínculo, rascunhos offline | Dependem de decisões em aberto ([Docs/telas.md](../Docs/telas.md)). |
 
 Validado: typecheck, testes unitários e de tela, build web e consultas somente leitura no OncoCare-Dev (isolamento entre pacientes e psicólogos). **Ainda não validado:** execução em aparelhos iOS/Android reais e escrita de relatos pelo app no ambiente Dev.
+
+O player não usa URLs públicas/assinadas nem guarda bytes no cache do TanStack Query. Na web usa uma URL `blob:` local; no nativo usa arquivo no cache privado do app. A cópia é liberada ao sair da tela, encerrar a sessão ou colocar o app em segundo plano; ao voltar, é necessário carregar novamente. Falhas de limpeza exibem aviso com nova tentativa. Encerramento abrupto do processo pode deixar arquivos no cache: limpeza após falhas e retenção operacional precisam ser definidas antes de usar dados reais. Veja [Docs/audio.md](../Docs/audio.md).

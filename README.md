@@ -69,7 +69,7 @@ No MVP o psicólogo tem papel **somente de acompanhamento**, sem ações de escr
 
 Em desenvolvimento. O app em [mobile/](mobile/) (Expo) já tem login com guardas por papel, os relatos de texto da paciente (histórico, novo relato, detalhe e edição), as telas somente leitura do psicólogo e a tela de conta. Veja como rodar e a arquitetura em [mobile/README.md](mobile/README.md).
 
-O suporte de banco e armazenamento para áudio está definido na migração incremental; gravação e reprodução no app ainda não foram implementadas. Veja o [fluxo de áudio e validação](Docs/audio.md).
+O suporte de banco e armazenamento para áudio está definido na migração incremental. O player já está integrado ao detalhe dos dois papéis, com download autenticado; gravação e envio pelo app ainda estão pendentes, assim como a validação do player em aparelhos reais. Veja o [fluxo de áudio e validação](Docs/audio.md).
 
 As telas, fluxos e estados do aplicativo para o protótipo no Figma estão em [Docs/telas.md](Docs/telas.md).
 

@@ -29,6 +29,7 @@ describe('entryRowSchema', () => {
       updated_at: '2026-11-04T08:00:00+00:00',
     });
     expect(entry.hasAudio).toBe(true);
+    expect(entry.audioPath).toBe('user/file.m4a');
     expect(isEditedEntry(entry)).toBe(true);
   });
 });

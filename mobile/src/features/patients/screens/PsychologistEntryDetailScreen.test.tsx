@@ -17,6 +17,7 @@ jest.mock('expo-router', () => ({
   }),
 }));
 jest.mock('@/features/diary/diaryRepository', () => ({ getEntry: jest.fn() }));
+jest.mock('@/features/audio/components/EntryAudioPlayer', () => ({ EntryAudioPlayer: jest.fn(() => null) }));
 jest.mock('@/features/auth/AuthProvider', () => ({ useSignedInAuth: jest.fn() }));
 jest.mock('../patientsRepository', () => ({ listLinkedPatients: jest.fn() }));
 
@@ -28,6 +29,7 @@ const entry: DiaryEntry = {
   content: 'Hoje consegui caminhar.',
   mood: 4,
   hasAudio: false,
+  audioPath: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

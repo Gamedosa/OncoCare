@@ -7,7 +7,7 @@
 - Formatos: M4A (`audio/mp4`, `audio/x-m4a`), MP3 (`audio/mpeg`), WAV (`audio/wav`, `audio/x-wav`), OGG (`audio/ogg`) e WebM (`audio/webm`).
 - Sem transcrição automática ou processamento por serviços externos.
 - Apenas a paciente envia, substitui ou remove seus áudios. O psicólogo atualmente vinculado pode ouvi-los, sem alterar arquivos ou relatos.
-- Banco e Storage são preparados aqui; gravação, permissão de microfone, envio e player no React Native ainda não estão implementados.
+- Banco e Storage estão preparados; o app já possui player no detalhe dos dois papéis. Gravação, permissão de microfone e envio ainda não estão implementados.
 
 ## Banco e armazenamento
 
@@ -78,7 +78,7 @@ Usar a chave publicável e o JWT da pessoa autenticada, nunca `service_role` no 
    Authorization: Bearer <user-jwt>
    ```
 
-   Com Supabase JS, usar `storage.from('diary-audio').download(audio_path)`. O futuro player deve reproduzir o download autenticado e remover cópias temporárias ao sair/encerrar sessão. Requisições autenticadas futuras são bloqueadas após desfazer o vínculo; arquivos já baixados não podem ser revogados.
+   Com Supabase JS, usar `storage.from('diary-audio').download(audio_path)`. O player implementado faz esse download apenas após "Carregar áudio": na web reproduz uma URL `blob:` local e no Android/iOS um arquivo de cache privado. Remove a cópia ao sair da tela, encerrar sessão ou colocar o app em segundo plano; ao voltar, exige novo download. Falhas de limpeza são notificadas com nova tentativa. Requisições autenticadas futuras são bloqueadas após desfazer o vínculo; arquivos já baixados não podem ser revogados.
 
 5. Para substituir: enviar outro arquivo com UUID novo, atualizar `audio_object_id` e só então remover o arquivo antigo. Para remover sem substituir: primeiro enviar `audio_object_id: null` no relato, preservando/adicionando texto não vazio, depois excluir o arquivo.
 
@@ -102,6 +102,7 @@ Upload e escrita do relato não são uma transação única. Se a escrita falhar
 - Antes do envio, explicar o compartilhamento com o psicólogo vinculado, solicitar permissão de microfone apenas quando necessária e permitir cancelar a gravação.
 - Base legal/consentimento, retenção, exclusão de conta e gestão de cópias locais ainda precisam ser definidos. Não coletar áudios reais até concluir essas decisões e validar o fluxo completo.
 - Não registrar bytes, conteúdo, JWTs ou URLs de acesso em logs. Testes usam apenas áudio sintético.
+- O processo pode encerrar sem executar a limpeza do player, deixando arquivos no cache nativo. A limpeza desses resíduos e sua retenção ainda precisam ser definidas antes do uso com dados reais.
 
 ## Validação
 

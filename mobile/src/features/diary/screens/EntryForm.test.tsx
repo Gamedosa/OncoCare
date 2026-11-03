@@ -19,6 +19,7 @@ const savedEntry: DiaryEntry = {
   content: 'Hoje foi melhor.',
   mood: 4,
   hasAudio: false,
+  audioPath: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

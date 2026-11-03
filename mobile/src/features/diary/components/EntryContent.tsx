@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Card, colors, font, Notice, spacing } from '@/shared/ui';
+import { EntryAudioPlayer } from '@/features/audio/components/EntryAudioPlayer';
+import { Card, colors, font, spacing } from '@/shared/ui';
 
 import { formatDateTime } from '../format';
 import { moodLabel } from '../mood';
@@ -27,7 +28,7 @@ export function EntryContent({ entry }: { entry: DiaryEntry }) {
           </Text>
         </Card>
       ) : null}
-      {entry.hasAudio ? <Notice>Este relato tem um áudio. A reprodução estará disponível em breve no app.</Notice> : null}
+      {entry.audioPath ? <EntryAudioPlayer path={entry.audioPath} /> : null}
     </View>
   );
 }

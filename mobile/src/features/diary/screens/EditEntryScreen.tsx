@@ -17,7 +17,7 @@ function EditForm({ entry }: { entry: DiaryEntry }) {
       entry={entry}
       saving={update.isPending || recording.isPending}
       saveError={recording.error ?? update.error}
-      onSave={(draft, audio) => audio ? recording.mutateAsync({ draft, audio }) : update.mutateAsync(draft)}
+      onSave={(draft, audio) => audio !== undefined ? recording.mutateAsync({ draft, audio }) : update.mutateAsync(draft)}
     />
   );
 }

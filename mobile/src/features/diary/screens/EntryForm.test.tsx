@@ -30,9 +30,11 @@ jest.mock('@/features/audio/components/RecordingInput', () => {
     ),
   };
 });
-jest.mock('@/features/audio/saveRecording', () => ({
-  AudioSaveRecoveryError: class extends Error {},
-}));
+jest.mock('@/features/audio/saveRecording', () => {
+  class AudioSaveRecoveryError extends Error {}
+  class AudioCleanupPendingError extends AudioSaveRecoveryError {}
+  return { AudioSaveRecoveryError, AudioCleanupPendingError };
+});
 
 const savedEntry: DiaryEntry = {
   id: '00000000-0000-4000-8000-000000000010',
@@ -108,7 +110,7 @@ describe('EntryForm', () => {
   });
 
   it('saves an audio-only draft with the recording bytes', async () => {
-    const onSave = jest.fn<(draft: unknown, audio?: RecordedAudio) => Promise<DiaryEntry>>().mockResolvedValue(savedEntry);
+    const onSave = jest.fn<(draft: unknown, audio?: RecordedAudio | null) => Promise<DiaryEntry>>().mockResolvedValue(savedEntry);
     await renderWithQuery(<EntryForm title="Novo relato" saving={false} saveError={null} onSave={onSave} />);
     await fireEvent.press(screen.getByRole('button', { name: 'Preparar áudio sintético' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
@@ -122,5 +124,59 @@ describe('EntryForm', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Iniciar gravação sintética' }));
     expect(screen.getByRole('button', { name: 'Salvar' }).props.accessibilityState).toMatchObject({ disabled: true });
     expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('requires confirmation and text before removing an audio-only entry', async () => {
+    const onSave = jest.fn<(draft: unknown, audio?: RecordedAudio | null) => Promise<DiaryEntry>>().mockResolvedValue(savedEntry);
+    await renderWithQuery(
+      <EntryForm title="Editar relato" entry={{ ...savedEntry, content: null, hasAudio: true, audioPath: 'patient/old.m4a' }}
+        saving={false} saveError={null} onSave={onSave} />,
+    );
+    await fireEvent.press(screen.getByRole('button', { name: 'Remover áudio' }));
+    expect(screen.getByText('Remover áudio?')).toBeTruthy();
+    expect(onSave).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByRole('button', { name: 'Remover ao salvar' }));
+    expect(screen.getByRole('button', { name: 'Salvar' }).props.accessibilityState).toMatchObject({ disabled: true });
+    await fireEvent.changeText(screen.getByLabelText('Quer contar mais?'), '  Texto para manter  ');
+    await fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+    expect(onSave).toHaveBeenCalledWith({ content: 'Texto para manter', mood: 4 }, null);
+  });
+
+  it('keeps the original audio when removal is cancelled', async () => {
+    const onSave = jest.fn<(draft: unknown, audio?: RecordedAudio | null) => Promise<DiaryEntry>>().mockResolvedValue(savedEntry);
+    await renderWithQuery(
+      <EntryForm title="Editar relato" entry={{ ...savedEntry, hasAudio: true, audioPath: 'patient/old.m4a' }}
+        saving={false} saveError={null} onSave={onSave} />,
+    );
+    await fireEvent.press(screen.getByRole('button', { name: 'Remover áudio' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Manter áudio' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+    expect(onSave).toHaveBeenCalledWith({ content: savedEntry.content, mood: 4 });
+  });
+
+  it('requires a new recording for replacement, even if text is present', async () => {
+    const onSave = jest.fn<(draft: unknown, audio?: RecordedAudio | null) => Promise<DiaryEntry>>().mockResolvedValue(savedEntry);
+    await renderWithQuery(
+      <EntryForm title="Editar relato" entry={{ ...savedEntry, hasAudio: true, audioPath: 'patient/old.m4a' }}
+        saving={false} saveError={null} onSave={onSave} />,
+    );
+    await fireEvent.press(screen.getByRole('button', { name: 'Substituir áudio' }));
+    expect(screen.getByRole('button', { name: 'Salvar' }).props.accessibilityState).toMatchObject({ disabled: true });
+    await fireEvent.press(screen.getByRole('button', { name: 'Preparar áudio sintético' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+    expect(onSave).toHaveBeenCalledWith({ content: savedEntry.content, mood: 4 }, mockRecording);
+  });
+
+  it('can discard a replacement and save while preserving the original', async () => {
+    const onSave = jest.fn<(draft: unknown, audio?: RecordedAudio | null) => Promise<DiaryEntry>>().mockResolvedValue(savedEntry);
+    await renderWithQuery(
+      <EntryForm title="Editar relato" entry={{ ...savedEntry, content: null, hasAudio: true, audioPath: 'patient/old.m4a' }}
+        saving={false} saveError={null} onSave={onSave} />,
+    );
+    await fireEvent.press(screen.getByRole('button', { name: 'Substituir áudio' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Preparar áudio sintético' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Manter áudio original' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+    expect(onSave).toHaveBeenCalledWith({ content: null, mood: 4 });
   });
 });

@@ -2,7 +2,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
-import { useSignOut } from '@/features/auth/hooks';
 import { relativeDay } from '@/features/diary/format';
 import {
   Button,
@@ -27,7 +26,6 @@ const SEARCH_THRESHOLD = 6;
 export function PatientsListScreen() {
   const router = useRouter();
   const query = useLinkedPatients();
-  const signOut = useSignOut();
   const [search, setSearch] = useState('');
 
   const patients = query.data ?? [];
@@ -35,13 +33,12 @@ export function PatientsListScreen() {
   const open = (patient: LinkedPatient) =>
     router.push({ pathname: '/psychologist/patients/[patientId]', params: { patientId: patient.id } });
 
-  // Temporary until the account screen exists.
   const header = (
     <Header
       title="Pacientes"
       right={
-        <Button variant="text" onPress={() => signOut.mutate()} loading={signOut.isPending}>
-          Sair
+        <Button variant="text" onPress={() => router.push('/psychologist/account')}>
+          Conta
         </Button>
       }
     />

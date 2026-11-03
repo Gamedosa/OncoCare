@@ -16,7 +16,16 @@ export function PatientHistoryScreen() {
   return (
     <Screen
       scroll={false}
-      header={<Header title="Meus relatos" />}
+      header={
+        <Header
+          title="Meus relatos"
+          right={
+            <Button variant="text" onPress={() => router.push('/patient/account')}>
+              Conta
+            </Button>
+          }
+        />
+      }
     >
       <EntryList
         query={entries}

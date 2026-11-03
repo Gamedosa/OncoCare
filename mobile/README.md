@@ -71,9 +71,11 @@ Fluxo de dados: **tela → hooks (TanStack Query) → repositório → Supabase*
 | Conta (os dois papéis) | Pronto. O texto de consentimento completo está pendente. |
 | Áudio: ouvir | Player integrado ao detalhe dos dois papéis; download autenticado sob demanda, reproduzir/pausar e nova tentativa. Validação em aparelhos ainda pendente. |
 | Áudio: gravar e enviar | Implementado para novos relatos e para adicionar áudio a relatos de texto, com prévia, cancelamento da gravação e recuperação de falhas de envio/escrita. Validação em aparelhos/Storage reais pendente. |
-| Áudio: substituir/remover áudio salvo | Pendente; a edição preserva o áudio existente. |
+| Áudio: substituir/remover áudio salvo | Implementado na edição; confirma a alteração no banco antes de excluir o arquivo antigo. Remoção exige texto; falha de limpeza permite nova tentativa sem reenviar. Testes automatizados e typecheck passaram; validação manual pendente. |
 | Consentimento, escala de humor, cadastro/vínculo, rascunhos offline | Dependem de decisões em aberto ([Docs/telas.md](../Docs/telas.md)). |
 
-Validado: typecheck, testes unitários e de tela, build web e consultas somente leitura no OncoCare-Dev (isolamento entre pacientes e psicólogos). **Ainda não validado:** execução em aparelhos iOS/Android reais e escrita de relatos pelo app no ambiente Dev.
+Validações dos incrementos anteriores: typecheck, testes unitários e de tela, build web e consultas somente leitura no OncoCare-Dev (isolamento entre pacientes e psicólogos). Execução em aparelhos iOS/Android reais ainda precisa ser validada.
+
+O usuário confirmou o teste manual do fluxo de gravação/envio com uma conta fictícia de paciente. A substituição/remoção de áudio é um incremento posterior: typecheck e os 103 testes da suíte passaram; validação manual desses novos fluxos ainda está pendente.
 
 O player não usa URLs públicas/assinadas nem guarda bytes no cache do TanStack Query. Na web usa uma URL `blob:` local; no nativo usa arquivo no cache privado do app. A cópia é liberada ao sair da tela, encerrar a sessão ou colocar o app em segundo plano; ao voltar, é necessário carregar novamente. Falhas de limpeza exibem aviso com nova tentativa. Encerramento abrupto do processo pode deixar arquivos no cache: limpeza após falhas e retenção operacional precisam ser definidas antes de usar dados reais. Veja [Docs/audio.md](../Docs/audio.md).

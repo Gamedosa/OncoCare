@@ -7,7 +7,7 @@
 - Formatos: M4A (`audio/mp4`, `audio/x-m4a`), MP3 (`audio/mpeg`), WAV (`audio/wav`, `audio/x-wav`), OGG (`audio/ogg`) e WebM (`audio/webm`).
 - Sem transcrição automática ou processamento por serviços externos.
 - Apenas a paciente envia, substitui ou remove seus áudios. O psicólogo atualmente vinculado pode ouvi-los, sem alterar arquivos ou relatos.
-- Banco e Storage estão preparados; o app possui player no detalhe dos dois papéis e gravação/envio pela paciente. É possível gravar um novo relato ou adicionar áudio a um relato de texto. Substituição e remoção de áudios já salvos ainda estão pendentes no app.
+- Banco e Storage estão preparados; o app possui player no detalhe dos dois papéis e gravação/envio pela paciente. É possível gravar um novo relato, adicionar áudio a um relato de texto e substituir/remover o áudio na edição.
 
 ## Banco e armazenamento
 
@@ -106,7 +106,12 @@ Upload e escrita do relato não são uma transação única. Se a escrita falhar
 - Falhas de upload também tentam limpar o caminho reservado, pois a requisição pode ter alcançado o servidor. Quando a API de remoção retorna zero arquivos, ausência só é aceita após conferir o usuário autenticado, seu papel paciente e a listagem do próprio caminho.
 - Se a resposta de escrita se perder, o app consulta o relato pelo caminho de áudio (ou pelo ID na edição) antes de apagar o arquivo. Um relato já confirmado é reutilizado, evitando nova criação. Se não conseguir confirmar/limpar, a tela avisa e a próxima tentativa reconcilia a operação antes de outro upload; edição do rascunho fica bloqueada nesse estado.
 - A recuperação de operações pendentes vive apenas na tela atual. Após sair/encerrar o processo, conferir o histórico antes de reenviar. Recuperação persistente, cancelamento do upload em andamento e progresso percentual ainda não foram implementados.
-- Ao editar um relato que já tem áudio, o áudio é preservado. Substituição/remoção são outro incremento, seguindo a ordem de operações acima.
+- Na edição, o áudio é preservado por padrão. "Substituir áudio" abre a gravação de um novo arquivo; a paciente pode desistir usando "Manter áudio original". A substituição só é salva após finalizar a nova gravação.
+- "Remover áudio" solicita confirmação e marca a remoção para o próximo salvamento. O botão Salvar fica desabilitado se não houver texto não vazio. Cancelar ou sair sem salvar não remove o áudio original.
+- A substituição atualiza `audio_object_id` com o ID do novo upload; a remoção envia `audio_object_id: null`. Só após confirmar a alteração no banco o app exclui o arquivo antigo pela API do Storage.
+- Se a resposta da remoção se perder, o app verifica se o relato voltou sem áudio e com o texto/humor enviados antes de excluir o arquivo. Se a escrita falhar, preserva o áudio original. Se a substituição falhar, tenta excluir somente o novo upload.
+- Se a alteração for salva mas a exclusão do arquivo antigo falhar, o histórico/detalhe são atualizados e a tela mostra "Tentar limpeza novamente". Essa tentativa só exclui o arquivo antigo: não reenvia nem regrava o relato. Enquanto pendente, o rascunho fica bloqueado; sair da tela encerra essa recuperação em memória e pode deixar o arquivo antigo órfão.
+- Os testes automatizados de substituição/remoção e o typecheck passaram. O fluxo anterior de gravação/envio foi testado manualmente pelo usuário com uma conta fictícia de paciente; isso não valida automaticamente substituição/remoção, outros papéis ou aparelhos.
 
 ## Privacidade e decisões pendentes
 

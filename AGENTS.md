@@ -30,3 +30,20 @@ O projeto esta em fase de planejamento e ainda nao possui codigo de aplicacao. C
 - Ao adicionar codigo, siga os padroes ja existentes no repositorio. Como ainda nao ha codigo de aplicacao, proponha a estrutura minima necessaria em vez de presumir convencoes.
 - Valide mudancas com os testes ou verificacoes disponiveis e informe claramente o que nao foi possivel validar.
 - Mantenha a documentacao atualizada quando uma decisao de produto ou tecnica for tomada.
+
+## Supabase CLI no WSL via Docker
+
+- Execute os comandos a partir da raiz do repositorio, montando o projeto e o volume nomeado da CLI:
+
+	```sh
+	docker run --rm -it \
+		-v "$PWD:/workspace" \
+		-v onco-supabase-cli:/root/.supabase \
+		-w /workspace \
+		node:22-slim \
+		npx --yes supabase <comando>
+	```
+
+- `supabase init`, `supabase login` e `supabase link` normalmente precisam ser executados uma vez. O volume `onco-supabase-cli` preserva a sessao da CLI; o bind mount preserva os arquivos do projeto e o vinculo local.
+- Use sempre o mesmo volume Docker e confirme o projeto vinculado com `supabase projects list` antes de comandos remotos. Rode `supabase db push --dry-run` e revise a migration pendente antes de aplicar.
+- Nunca aplique migrations em producao sem autorizacao explicita. Nao grave tokens, senhas ou chaves em arquivos versionados nem os compartilhe em conversas.

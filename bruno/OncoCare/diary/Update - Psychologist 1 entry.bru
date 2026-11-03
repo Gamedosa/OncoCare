@@ -1,0 +1,31 @@
+meta {
+  name: Update entry - Psychologist 1 should not change rows
+  type: http
+  seq: 9
+}
+
+patch {
+  url: {{baseUrl}}/rest/v1/diary_entries?patient_id=eq.50c01418-6770-47c4-9bed-74c09f066382
+  body: json
+  auth: none
+}
+
+headers {
+  apikey: {{publishableKey}}
+  Authorization: Bearer {{psychologist1AccessToken}}
+  Prefer: return=representation
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "content": "Tentativa ficticia de alteracao pelo psicologo."
+  }
+}
+
+tests {
+  test("psychologist 1 cannot update entries", function() {
+    expect(res.status).to.equal(200);
+    expect(res.body).to.be.an("array").that.is.empty;
+  });
+}

@@ -1,0 +1,41 @@
+meta {
+  name: Login - Patient 1
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/v1/token?grant_type=password
+  body: json
+  auth: none
+}
+
+headers {
+  apikey: {{publishableKey}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{patient1Email}}",
+    "password": "{{patient1Password}}"
+  }  
+}
+
+vars:pre-request {
+  patient1Email: paciente1@gmail.com
+  patient1Password: user123
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.access_token) {
+    bru.setEnvVar('patient1AccessToken', res.body.access_token);
+  }
+}
+
+tests {
+  test("patient 1 login succeeds", function() {
+    expect(res.status).to.equal(200);
+    expect(res.body.access_token).to.be.a("string");
+  });
+}

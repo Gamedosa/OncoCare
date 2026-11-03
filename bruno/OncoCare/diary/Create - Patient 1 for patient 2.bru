@@ -1,0 +1,30 @@
+meta {
+  name: Create entry - Patient 1 for patient 2 should fail
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/rest/v1/diary_entries
+  body: json
+  auth: none
+}
+
+headers {
+  apikey: {{publishableKey}}
+  Authorization: Bearer {{patient1AccessToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "patient_id": "b2c77a23-7a93-4c0d-8a78-5b924cefcd29",
+    "content": "Tentativa ficticia de criar relato para outra paciente."
+  }
+}
+
+tests {
+  test("patient 1 cannot create entry for patient 2", function() {
+    expect(res.status).to.equal(403);
+  });
+}

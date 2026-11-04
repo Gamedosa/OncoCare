@@ -65,7 +65,7 @@ Fluxo de dados: **tela → hooks (TanStack Query) → repositório → Supabase*
 
 | Área | Situação |
 |---|---|
-| Login, recuperar senha, guardas por papel | Pronto. O link de redefinição ainda não abre no app. |
+| Login, recuperar senha, guardas por papel | Recuperação por link de uso único e formulário de nova senha implementados. Exige configurar template/redirects no Supabase; validação por e-mail e aparelhos pendente. |
 | Paciente: histórico, novo relato, detalhe, edição | Pronto (texto + humor provisório 1–5). |
 | Psicólogo: pacientes vinculadas, relatos e detalhe somente leitura | Pronto. |
 | Conta (os dois papéis) | Pronto. O texto de consentimento completo está pendente. |
@@ -79,3 +79,25 @@ Validações dos incrementos anteriores: typecheck, testes unitários e de tela,
 O usuário confirmou o teste manual do fluxo de gravação/envio com uma conta fictícia de paciente. A substituição/remoção de áudio é um incremento posterior: typecheck e os 103 testes da suíte passaram; validação manual desses novos fluxos ainda está pendente.
 
 O player não usa URLs públicas/assinadas nem guarda bytes no cache do TanStack Query. Na web usa uma URL `blob:` local; no nativo usa arquivo no cache privado do app. A cópia é liberada ao sair da tela, encerrar a sessão ou colocar o app em segundo plano; ao voltar, é necessário carregar novamente. Falhas de limpeza exibem aviso com nova tentativa. Encerramento abrupto do processo pode deixar arquivos no cache: limpeza após falhas e retenção operacional precisam ser definidas antes de usar dados reais. Veja [Docs/audio.md](../Docs/audio.md).
+
+## Configurar a recuperação de senha
+
+Não há migration. No projeto Supabase correto, configure manualmente:
+
+1. **Authentication → URL Configuration → Redirect URLs**: permita os endereços exatos de retorno utilizados:
+   - Web local: `http://localhost:8081/reset-password` (ajuste a porta).
+   - Web publicada: `https://SEU-DOMINIO/reset-password`. O servidor precisa servir essa rota diretamente.
+   - Build nativo com scheme registrado: `oncocare://reset-password`.
+   - Expo Go: `exp://SEU-HOST:PORTA/--/reset-password`, conforme o endereço da sessão atual do Metro. IP/túnel mudam; atualize a allowlist quando necessário. Expo Go não registra o scheme `oncocare`. Para links estáveis, use um development build ou build instalado.
+2. **Authentication → Email Templates → Reset Password**: use o conteúdo de [`../supabase/templates/recovery.html`](../supabase/templates/recovery.html). O link deve ser `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=recovery`, **não** `{{ .ConfirmationURL }}`. O template também está configurado para Supabase local em [`../supabase/config.toml`](../supabase/config.toml).
+3. Configure SMTP/limites de envio e revise a validade do token no servidor (local: `otp_expiry = 3600`). Nunca use dados reais nos testes.
+
+O app envia `redirectTo` calculado pelo Expo Linking para o ambiente atual. Quem recebe o e-mail abre o link e toca em **Validar link de recuperação**: somente então `verifyOtp` valida o token de uso único no Supabase. Links sem token, expirados, usados ou de outro fluxo não liberam o formulário. O template padrão do Supabase e links PKCE/implicit antigos não são aceitos: após configurar, solicite um novo e-mail.
+
+Após validar, a navegação fica no fluxo de recuperação, sem depender de carregar o perfil. A nova senha exige confirmação e ao menos 6 caracteres (mínimo atual da configuração local); políticas mais fortes do projeto remoto continuam sendo aplicadas pelo servidor. O app não coleta CPF. Ao salvar, solicita encerramento global das sessões e exige novo login. Se esse encerramento falhar, oferece repetir **somente** o encerramento. JWTs de acesso já emitidos podem continuar válidos até expirar; revogar refresh tokens não os invalida imediatamente.
+
+Tokens são retirados da URL visível após a abertura e não são enviados a logs pelo app. Hospedagem/proxies devem omitir parâmetros sensíveis dos logs e usar `Referrer-Policy: no-referrer`; o primeiro acesso HTTP ainda contém o token. Use HTTPS fora do localhost. O Supabase controla validade/uso único do token e proteção dos dados em repouso; sessões continuam usando SecureStore no nativo e localStorage na web. Não compartilhe links de recuperação.
+
+O formulário mantém sua validação apenas durante a abertura atual; recarregar ou encerrar o app após consumir o link exige solicitar outro link para redefinir. Isso não implementa cadastro, convite, primeiro acesso obrigatório ou consentimento de vínculo.
+
+Validação manual pendente: solicitar e-mail com conta fictícia; abrir na web/Android/iOS com app fechado e aberto; testar expiração/reuso, confirmação divergente, perda de rede, encerramento das sessões e login com a nova senha. Nenhuma configuração remota é aplicada pelos testes automatizados.

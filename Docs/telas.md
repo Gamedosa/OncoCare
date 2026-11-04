@@ -32,6 +32,10 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 ### C2. Recuperar senha
 
 - Campo de e-mail e confirmação neutra ("Se houver uma conta, enviaremos instruções").
+- Link de uso único abre a tela de redefinição na web ou no app. A validação explícita do link ocorre no Supabase; sessão comum não substitui essa validação.
+- Nova senha (mínimo atual de 6 caracteres, sujeito à política do servidor) e confirmação. Link inválido/expirado/usado permite solicitar outro; falhas de rede permitem nova tentativa.
+- Após salvar, encerrar sessões e voltar ao login. Falha de encerramento permite repeti-lo sem alterar novamente a senha.
+- Configuração de template/URLs e limitações do Expo Go em [mobile/README.md](../mobile/README.md#configurar-a-recuperação-de-senha). Cadastro e primeiro acesso obrigatório continuam fora deste incremento.
 
 ### C3. Conta
 

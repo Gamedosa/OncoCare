@@ -69,6 +69,8 @@ No MVP o psicólogo tem papel **somente de acompanhamento**, sem ações de escr
 
 Em desenvolvimento. O app em [mobile/](mobile/) (Expo) já tem login com guardas por papel, os relatos de texto da paciente (histórico, novo relato, detalhe e edição), as telas somente leitura do psicólogo e a tela de conta. Veja como rodar e a arquitetura em [mobile/README.md](mobile/README.md).
 
+A recuperação de senha por e-mail está implementada, com link de uso único, confirmação da nova senha e encerramento das sessões. Antes de testar, configure o template de recuperação e as URLs de retorno no Supabase, conforme [mobile/README.md](mobile/README.md#configurar-a-recuperação-de-senha). Validação manual por e-mail e aparelhos ainda pendente; isso não implementa cadastro ou primeiro acesso obrigatório.
+
 O player está integrado ao detalhe dos dois papéis, com download autenticado. A paciente pode gravar e enviar áudio em novos relatos, adicioná-lo a relatos de texto e substituir/remover o áudio na edição. O fluxo anterior de gravação/envio foi testado manualmente pelo usuário; os novos fluxos de substituição/remoção passaram nos testes automatizados e no typecheck, mas ainda precisam de validação manual. Veja o [fluxo de áudio e validação](Docs/audio.md).
 
 As telas, fluxos e estados do aplicativo para o protótipo no Figma estão em [Docs/telas.md](Docs/telas.md).

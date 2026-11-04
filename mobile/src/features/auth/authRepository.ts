@@ -1,4 +1,5 @@
-import type { Session } from '@supabase/supabase-js';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { createURL } from 'expo-linking';
 
 import { supabase } from '@/shared/supabase/client';
 
@@ -10,8 +11,8 @@ export async function getSession(): Promise<Session | null> {
   return data.session;
 }
 
-export function onSessionChange(listener: (session: Session | null) => void): () => void {
-  const { data } = supabase.auth.onAuthStateChange((_event, session) => listener(session));
+export function onSessionChange(listener: (session: Session | null, event: AuthChangeEvent) => void): () => void {
+  const { data } = supabase.auth.onAuthStateChange((event, session) => listener(session, event));
   return () => data.subscription.unsubscribe();
 }
 
@@ -21,12 +22,23 @@ export async function signIn({ email, password }: Credentials): Promise<void> {
 }
 
 export async function signOut(): Promise<void> {
-  const { error } = await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut({ scope: 'global' });
   if (error) throw error;
 }
 
 export async function requestPasswordReset(email: string): Promise<void> {
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: createURL('/reset-password') });
+  if (error) throw error;
+}
+
+export async function verifyRecoveryLink(tokenHash: string): Promise<void> {
+  const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+  if (error) throw error;
+  if (!data.session) throw new Error('Recovery session missing');
+}
+
+export async function updateRecoveredPassword(password: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ password });
   if (error) throw error;
 }
 

@@ -9,6 +9,20 @@ export const credentialsSchema = z.object({
 
 export type Credentials = z.infer<typeof credentialsSchema>;
 
+// Mirrors the current Supabase minimum; stronger server policies remain authoritative.
+export const resetPasswordSchema = z.object({
+  password: z.string().min(6, 'Use pelo menos 6 caracteres.'),
+  confirmation: z.string().min(1, 'Confirme a nova senha.'),
+}).refine((value) => value.password === value.confirmation, {
+  message: 'As senhas não coincidem.',
+  path: ['confirmation'],
+});
+
+export const recoveryLinkSchema = z.object({
+  token_hash: z.string().min(1).max(2048),
+  type: z.literal('recovery'),
+});
+
 export const roleSchema = z.enum(['patient', 'psychologist']);
 
 export type Role = z.infer<typeof roleSchema>;

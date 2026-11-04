@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
@@ -19,14 +19,17 @@ export default function RootLayout() {
 // Guards only decide navigation; data access is enforced by RLS in Supabase.
 function RootNavigator() {
   const auth = useAuth();
-  if (auth.status === 'loading') return <LoadingScreen />;
-  if (auth.status === 'profileError') return <ProfileErrorScreen onRetry={auth.retry} />;
+  const segments = useSegments();
+  const isRecoveryRoute = segments[0] === 'reset-password';
+  if (auth.status === 'loading' && !isRecoveryRoute) return <LoadingScreen />;
+  if (auth.status === 'profileError' && !isRecoveryRoute) return <ProfileErrorScreen onRetry={auth.retry} />;
 
   const role = auth.status === 'signedIn' ? auth.profile.role : null;
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
-      <Stack.Protected guard={role === null}>
+      <Stack.Screen name="reset-password" />
+      <Stack.Protected guard={role === null && auth.status !== 'passwordRecovery'}>
         <Stack.Screen name="login" />
         <Stack.Screen name="forgot-password" />
       </Stack.Protected>

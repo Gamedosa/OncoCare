@@ -8,6 +8,7 @@ import type { Profile } from './schemas';
 export type AuthState =
   | { status: 'loading' }
   | { status: 'signedOut' }
+  | { status: 'passwordRecovery'; session: Session }
   | { status: 'profileError'; retry: () => void }
   | { status: 'signedIn'; session: Session; profile: Profile };
 
@@ -19,18 +20,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [session, setSession] = useState<Session | null>(null);
   const [restored, setRestored] = useState(false);
+  const [recovering, setRecovering] = useState(false);
 
   useEffect(() => {
     let active = true;
+    let receivedSessionEvent = false;
     getSession()
       .catch(() => null)
       .then((current) => {
-        if (!active) return;
+        if (!active || receivedSessionEvent) return;
         setSession(current);
         setRestored(true);
       });
-    const unsubscribe = onSessionChange((next) => {
+    const unsubscribe = onSessionChange((next, event) => {
+      receivedSessionEvent = true;
+      setRestored(true);
       setSession(next);
+      if (event === 'PASSWORD_RECOVERY') {
+        setRecovering(true);
+        queryClient.clear();
+      }
+      if (!next || event === 'SIGNED_IN') setRecovering(false);
       // Drop every cached diary/profile query so nothing leaks to the next account.
       if (!next) queryClient.clear();
     });
@@ -44,17 +54,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const profile = useQuery({
     queryKey: profileQueryKey(userId),
     queryFn: () => fetchProfile(userId as string),
-    enabled: !!userId,
+    enabled: !!userId && !recovering,
     staleTime: Infinity,
   });
 
   const value = useMemo<AuthState>(() => {
     if (!restored) return { status: 'loading' };
     if (!session) return { status: 'signedOut' };
+    if (recovering) return { status: 'passwordRecovery', session };
     if (profile.data) return { status: 'signedIn', session, profile: profile.data };
     if (profile.isError) return { status: 'profileError', retry: () => void profile.refetch() };
     return { status: 'loading' };
-  }, [restored, session, profile.data, profile.isError, profile.refetch]);
+  }, [restored, session, recovering, profile.data, profile.isError, profile.refetch]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

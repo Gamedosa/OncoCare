@@ -21,7 +21,8 @@ export const supabase = createClient<Database>(url, publishableKey, {
     storage: isWeb ? undefined : createChunkedStorage(SecureStore),
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: isWeb,
+    // Recovery links are verified explicitly on the reset-password screen.
+    detectSessionInUrl: false,
   },
 });
 

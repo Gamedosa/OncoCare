@@ -82,6 +82,22 @@ O usuário confirmou o teste manual do fluxo de gravação/envio com uma conta f
 
 O player não usa URLs públicas/assinadas nem guarda bytes no cache do TanStack Query. Na web usa uma URL `blob:` local; no nativo usa arquivo no cache privado do app. A cópia é liberada ao sair da tela, encerrar a sessão ou colocar o app em segundo plano; ao voltar, é necessário carregar novamente. Falhas de limpeza exibem aviso com nova tentativa. Encerramento abrupto do processo pode deixar arquivos no cache: limpeza após falhas e retenção operacional precisam ser definidas antes de usar dados reais. Veja [Docs/audio.md](../Docs/audio.md).
 
+## Publicar a versão web (Cloudflare Pages)
+
+O app web é estático (SPA, `web.output: "single"`). O export não gera `404.html`, então o Cloudflare Pages entrega `index.html` para rotas como `/accept-invite` e `/reset-password`. [`public/_headers`](./public/_headers) é copiado para o build e define `Referrer-Policy: no-referrer` (links de convite e recuperação levam token na URL), bloqueia iframes e libera o microfone apenas para o próprio site.
+
+1. No Cloudflare: **Workers & Pages → Create → Pages → Connect to Git** e selecione o repositório.
+2. Configuração do build:
+   - Production branch: a branch publicada (ex.: `dev` para testes).
+   - Root directory: `mobile`
+   - Build command: `npx expo export --platform web`
+   - Build output directory: `dist`
+3. Variáveis de ambiente (Production e Preview): `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` e `NODE_VERSION=22`. Elas entram no bundle no build; nunca use a secret/service role key aqui. A proteção dos dados é feita pelo RLS.
+4. Após o deploy, no Supabase (**Authentication → URL Configuration**): defina a **Site URL** e inclua `https://SEU-PROJETO.pages.dev/accept-invite` e `https://SEU-PROJETO.pages.dev/reset-password` em **Redirect URLs**.
+5. Verifique se `https://SEU-PROJETO.pages.dev/accept-invite` abre o app (não um 404).
+
+Use dados fictícios: o projeto Dev não é ambiente de produção. Deploys de preview (`*.SEU-PROJETO.pages.dev`) usam outro endereço e precisam de Redirect URL própria para testar convites. Domínio próprio: em **Custom domains** do projeto Pages (com o DNS no Cloudflare), atualizando as Redirect URLs.
+
 ## Configurar a recuperação de senha
 
 Não há migration. No projeto Supabase correto, configure manualmente:

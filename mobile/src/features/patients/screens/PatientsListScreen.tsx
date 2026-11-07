@@ -56,22 +56,27 @@ export function PatientsListScreen() {
         keyExtractor={(patient) => patient.id}
         renderItem={({ item }) => <PatientCard patient={item} onPress={() => open(item)} />}
         ListHeaderComponent={
-          patients.length > SEARCH_THRESHOLD ? (
-            <TextField
-              label="Buscar por nome"
-              value={search}
-              onChangeText={setSearch}
-              autoCorrect={false}
-              autoCapitalize="none"
-              returnKeyType="search"
-            />
-          ) : undefined
+          <View style={styles.listHeader}>
+            <Button variant="secondary" onPress={() => router.push('/psychologist/invitations')}>
+              Convidar paciente
+            </Button>
+            {patients.length > SEARCH_THRESHOLD ? (
+              <TextField
+                label="Buscar por nome"
+                value={search}
+                onChangeText={setSearch}
+                autoCorrect={false}
+                autoCapitalize="none"
+                returnKeyType="search"
+              />
+            ) : null}
+          </View>
         }
         ListEmptyComponent={
           patients.length === 0 ? (
             <EmptyState
               title="Nenhuma paciente vinculada no momento."
-              text="Quando uma paciente for vinculada a você, ela aparecerá aqui."
+              text="Convide uma paciente. Ela aparecerá aqui quando aceitar o convite."
             />
           ) : (
             <EmptyState title="Nenhuma paciente encontrada." text="Confira o nome digitado." />
@@ -118,6 +123,7 @@ function PatientCard({ patient, onPress }: { patient: LinkedPatient; onPress: ()
 
 const styles = StyleSheet.create({
   content: { gap: spacing.md, paddingBottom: spacing.xl },
+  listHeader: { gap: spacing.md },
   card: { backgroundColor: colors.card, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.xs, ...shadow },
   pressed: { backgroundColor: colors.surface },
   name: { fontSize: font.body, fontWeight: '800', color: colors.text },

@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, Text } from 'react-native';
 
 import { useSignedInAuth } from '@/features/auth/AuthProvider';
+import { InvitationBanner } from '@/features/invitations/screens/InvitationBanner';
 import { Button, Card, colors, EmptyState, font, Header, Screen, spacing } from '@/shared/ui';
 
 import { EntryList } from '../components/EntryList';
@@ -31,10 +32,13 @@ export function PatientHistoryScreen() {
         query={entries}
         onOpen={(entry) => router.push({ pathname: '/patient/entries/[id]', params: { id: entry.id } })}
         header={
-          <Card style={styles.prompt}>
-            <Text style={styles.promptTitle}>Como você está hoje?</Text>
-            <Button onPress={newEntry}>Novo relato</Button>
-          </Card>
+          <>
+            <InvitationBanner />
+            <Card style={styles.prompt}>
+              <Text style={styles.promptTitle}>Como você está hoje?</Text>
+              <Button onPress={newEntry}>Novo relato</Button>
+            </Card>
+          </>
         }
         empty={
           <EmptyState

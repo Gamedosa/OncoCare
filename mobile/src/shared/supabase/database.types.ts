@@ -58,6 +58,57 @@ export type Database = {
           },
         ]
       }
+      patient_invitations: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          patient_id: string
+          patient_name: string
+          psychologist_id: string
+          status: Database["public"]["Enums"]["invitation_status"]
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          patient_id: string
+          patient_name: string
+          psychologist_id: string
+          status?: Database["public"]["Enums"]["invitation_status"]
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          patient_id?: string
+          patient_name?: string
+          psychologist_id?: string
+          status?: Database["public"]["Enums"]["invitation_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_invitations_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patient_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "patient_invitations_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "psychologist_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       patient_profiles: {
         Row: {
           created_at: string
@@ -140,10 +191,48 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      accept_patient_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
+      }
+      create_patient_invitation: {
+        Args: {
+          p_email: string
+          p_patient_id: string
+          p_patient_name: string
+          p_psychologist_id: string
+        }
+        Returns: string
+      }
+      decline_patient_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
+      }
+      find_invitation_target: {
+        Args: { p_email: string }
+        Returns: {
+          confirmed: boolean
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }[]
+      }
+      list_my_patient_invitations: {
+        Args: never
+        Returns: {
+          created_at: string
+          expires_at: string
+          id: string
+          psychologist_name: string
+        }[]
+      }
+      revoke_patient_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "patient" | "psychologist"
+      invitation_status: "pending" | "accepted" | "declined" | "revoked"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -272,6 +361,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["patient", "psychologist"],
+      invitation_status: ["pending", "accepted", "declined", "revoked"],
     },
   },
 } as const

@@ -10,6 +10,7 @@ import * as accountRepository from '../accountRepository';
 import { AccountScreen } from './AccountScreen';
 
 let mockProfile: Profile;
+const mockPush = jest.fn();
 
 jest.mock('@/features/auth/AuthProvider', () => ({ useSignedInAuth: () => ({ profile: mockProfile }) }));
 jest.mock('@/features/auth/authRepository', () => ({ signOut: jest.fn() }));
@@ -17,7 +18,7 @@ jest.mock('../accountRepository', () => ({ getLinkedPsychologist: jest.fn() }));
 jest.mock('@/features/links/linksRepository', () => ({ unlinkPatient: jest.fn() }));
 jest.mock('@/features/patients/patientsRepository', () => ({ listLinkedPatients: jest.fn() }));
 jest.mock('@/features/diary/diaryRepository', () => ({}));
-jest.mock('expo-router', () => ({ useRouter: () => ({ back: jest.fn() }) }));
+jest.mock('expo-router', () => ({ useRouter: () => ({ back: jest.fn(), push: mockPush }) }));
 
 const getLinkedPsychologist = jest.mocked(accountRepository.getLinkedPsychologist);
 const signOut = jest.mocked(authRepository.signOut);
@@ -30,6 +31,7 @@ describe('AccountScreen', () => {
     getLinkedPsychologist.mockReset();
     signOut.mockReset();
     unlinkPatient.mockReset();
+    mockPush.mockReset();
     mockProfile = { id: PATIENT, role: 'patient', displayName: 'Ana' };
   });
 
@@ -50,6 +52,20 @@ describe('AccountScreen', () => {
 
     expect(await screen.findByText('Nenhum psicólogo vinculado')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Encerrar vínculo' })).toBeNull();
+  });
+
+  it('opens the terms preview from the patient account', async () => {
+    getLinkedPsychologist.mockResolvedValue(null);
+    await renderWithQuery(<AccountScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Ver termos de uso (prévia)' }));
+    expect(mockPush).toHaveBeenCalledWith('/patient/terms');
+  });
+
+  it('opens the terms preview from the psychologist account', async () => {
+    mockProfile = { id: '00000000-0000-4000-8000-000000000009', role: 'psychologist', displayName: null };
+    await renderWithQuery(<AccountScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Ver termos de uso (prévia)' }));
+    expect(mockPush).toHaveBeenCalledWith('/psychologist/terms');
   });
 
   it('requires confirmation, unlinks the displayed psychologist and keeps the diary', async () => {

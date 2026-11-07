@@ -69,7 +69,7 @@ Fluxo de dados: **tela → hooks (TanStack Query) → repositório → Supabase*
 | Login, recuperar senha, guardas por papel | Recuperação por link de uso único e formulário de nova senha implementados. Exige configurar template/redirects no Supabase; validação por e-mail e aparelhos pendente. |
 | Paciente: histórico, novo relato, detalhe, edição | Pronto (texto + humor provisório 1–5). |
 | Psicólogo: pacientes vinculadas, relatos e detalhe somente leitura | Pronto. |
-| Conta (os dois papéis) | Pronto. O texto de consentimento completo está pendente. |
+| Conta (os dois papéis) | Inclui prévia dos Termos de Uso. Política de privacidade, consentimento e registro de aceite continuam pendentes. |
 | Áudio: ouvir | Player integrado ao detalhe dos dois papéis; download autenticado sob demanda, reproduzir/pausar e nova tentativa. Validação em aparelhos ainda pendente. |
 | Áudio: gravar e enviar | Implementado para novos relatos e para adicionar áudio a relatos de texto, com prévia, cancelamento da gravação e recuperação de falhas de envio/escrita. Validação em aparelhos/Storage reais pendente. |
 | Áudio: substituir/remover áudio salvo | Implementado na edição; confirma a alteração no banco antes de excluir o arquivo antigo. Remoção exige texto; falha de limpeza permite nova tentativa sem reenviar. Testes automatizados e typecheck passaram; validação manual pendente. |
@@ -82,6 +82,12 @@ Validações dos incrementos anteriores: typecheck, testes unitários e de tela,
 O usuário confirmou na web o convite, a gravação/envio e a reprodução do áudio pelo psicólogo com uma conta de teste. A substituição/remoção de áudio ainda precisa de validação manual.
 
 O player não usa URLs públicas/assinadas nem guarda bytes no cache do TanStack Query. Na web usa uma URL `blob:` local; no nativo usa arquivo no cache privado do app. A cópia é liberada ao sair da tela, encerrar a sessão ou colocar o app em segundo plano; ao voltar, é necessário carregar novamente. Falhas de limpeza exibem aviso com nova tentativa. Encerramento abrupto do processo pode deixar arquivos no cache: limpeza após falhas e retenção operacional precisam ser definidas antes de usar dados reais. Veja [Docs/audio.md](../Docs/audio.md).
+
+## Prévia dos Termos de Uso
+
+Em **Conta → Ver termos de uso (prévia)**, ambos os perfis podem consultar a minuta de [`../Docs/TERMOS_DE_USO.md`](../Docs/TERMOS_DE_USO.md). Ela é uma prévia, não solicita nem registra aceite e não substitui a política de privacidade ou consentimentos específicos. Nome ElaConta e responsável são preenchidos apenas na prévia; CPF, contatos, datas e demais informações não definidas permanecem pendentes. O nome técnico do app e os links existentes não foram alterados.
+
+Após atualizar a minuta, execute `npm run sync:terms` em `mobile/` e inclua o `terms.json` gerado. Revise cláusulas, dados, contatos e recursos não implementados com assessoria jurídica antes de apresentar o documento como definitivo ou usar dados reais.
 
 ## Publicar a versão web (Cloudflare Pages)
 

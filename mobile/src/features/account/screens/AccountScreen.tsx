@@ -40,6 +40,10 @@ export function AccountScreen() {
         </Card>
       ) : null}
 
+      <Button variant="secondary" onPress={() => router.push(isPatient ? '/patient/terms' : '/psychologist/terms')}>
+        Ver termos de uso (prévia)
+      </Button>
+
       <Button variant="secondary" onPress={() => signOut.mutate()} loading={signOut.isPending}>
         Sair
       </Button>

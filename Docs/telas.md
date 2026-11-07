@@ -50,6 +50,7 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 
 - Nome de exibição, papel, sair.
 - Paciente: nome do psicólogo vinculado (ou "Nenhum psicólogo vinculado"), ação para encerrar o vínculo com confirmação e acesso ao texto de privacidade/consentimento. Sem vínculo, pode continuar criando e editando relatos.
+- Ambos: prévia dos Termos de Uso na conta, identificada como minuta, sem solicitação ou registro de aceite.
 
 ## Telas da paciente
 

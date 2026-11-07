@@ -18,6 +18,7 @@ Oferecer um espaço seguro e simples para que pacientes registrem seus sentiment
 - [x] Criação de relatos diários (texto, áudio ou ambos + humor/escala de bem-estar). *Humor provisório.*
 - [x] Envio e reprodução de um áudio por relato (até 10 MiB, sem transcrição automática). *Testado na web; validação nativa pendente.*
 - [x] Atualização de relatos existentes pela paciente.
+- [x] Exclusão de relatos próprios pela paciente, com confirmação e limpeza pendente do áudio quando necessário.
 - [x] Histórico de relatos da paciente.
 - [x] Psicólogo visualiza lista de pacientes vinculadas (somente leitura).
 - [x] Psicólogo lê e ouve os relatos das pacientes vinculadas (somente leitura).
@@ -32,6 +33,7 @@ Oferecer um espaço seguro e simples para que pacientes registrem seus sentiment
 - Enviar, ouvir, substituir e remover o áudio do próprio relato.
 - Ver histórico de relatos.
 - Atualizar (editar) um relato existente.
+- Excluir um relato próprio.
 - Aceitar ou recusar convite de acompanhamento de um psicólogo.
 - Encerrar o vínculo e continuar usando o diário sem psicólogo.
 

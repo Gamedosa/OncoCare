@@ -95,6 +95,8 @@ Usar a chave publicável e o JWT da pessoa autenticada, nunca `service_role` no 
 
 Upload e escrita do relato não são uma transação única. Se a escrita falhar, tentar remover o novo arquivo pela API, informando falhas de limpeza e permitindo nova tentativa. Arquivos ainda não associados são visíveis somente à paciente; não ficam disponíveis ao psicólogo. Não há limpeza automática implementada. Retenção e limpeza operacional desses arquivos precisam ser definidas antes do uso real.
 
+Ao excluir um relato, o banco registra atomicamente o caminho do áudio em uma fila privada da paciente e remove o relato. O histórico tenta a remoção pela API do Storage; falhas e interrupções mantêm a pendência para nova tentativa. O banco só limpa a fila após verificar que o objeto deixou de existir. O psicólogo perde o acesso ao relato e ao áudio assim que o relato é excluído; cópias anteriores e backups dependem da política de retenção.
+
 ### Gravação e envio no app
 
 - Permissão de microfone solicitada somente após "Gravar áudio"; sem permissão, o relato de texto continua disponível.

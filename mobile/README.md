@@ -68,6 +68,7 @@ Fluxo de dados: **tela → hooks (TanStack Query) → repositório → Supabase*
 |---|---|
 | Login, recuperar senha, guardas por papel | Recuperação por link de uso único e formulário de nova senha implementados. Exige configurar template/redirects no Supabase; validação por e-mail e aparelhos pendente. |
 | Paciente: histórico, novo relato, detalhe, edição | Pronto (texto + humor provisório 1–5). |
+| Exclusão de relatos | A paciente exclui no detalhe após confirmação. Áudios ficam em fila persistente até a remoção pelo Storage; o histórico tenta a limpeza e oferece nova tentativa em caso de falha. Requer migration `20261107020000_delete_diary_entry.sql` e validação manual. |
 | Psicólogo: pacientes vinculadas, relatos e detalhe somente leitura | Pronto. |
 | Conta (os dois papéis) | Inclui prévia dos Termos de Uso. Política de privacidade, consentimento e registro de aceite continuam pendentes. |
 | Áudio: ouvir | Player integrado ao detalhe dos dois papéis; download autenticado sob demanda, reproduzir/pausar e nova tentativa. Validação em aparelhos ainda pendente. |

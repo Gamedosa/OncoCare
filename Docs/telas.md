@@ -88,13 +88,13 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 ### P5. Detalhe do relato
 
 - Data/hora de criação e "editado em", humor, texto completo, player (tocar/pausar, avançar/voltar, duração).
-- Ação "Editar".
+- Ações "Editar" e "Excluir relato"; exclusão pede confirmação e remove o acesso ao relato.
 
 ### P6. Editar relato
 
 - Mesmos campos de P3, preenchidos.
 - Áudio: ouvir, substituir (nova gravação) ou remover. Remover só é permitido se houver texto não vazio; caso contrário, explicar que o relato precisa de texto ou áudio.
-- Exclusão de relatos não faz parte do MVP.
+- Exclusão ocorre no detalhe do relato, mediante confirmação.
 
 ### P-Convites. Convites de acompanhamento
 

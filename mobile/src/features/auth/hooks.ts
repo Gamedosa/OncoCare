@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { requestPasswordReset, signIn, signOut, updateRecoveredPassword, verifyRecoveryLink } from './authRepository';
+import { requestPasswordReset, signIn, signOut, updatePassword, verifyInviteLink, verifyRecoveryLink } from './authRepository';
 
 export function useSignIn() {
   return useMutation({ mutationFn: signIn });
@@ -18,8 +18,12 @@ export function useVerifyRecoveryLink(tokenHash: () => string) {
   return useMutation({ mutationFn: () => verifyRecoveryLink(tokenHash()), gcTime: 0, retry: false });
 }
 
-export function useUpdateRecoveredPassword() {
-  return useMutation({ mutationFn: updateRecoveredPassword, gcTime: 0, retry: false });
+export function useVerifyInviteLink(tokenHash: () => string) {
+  return useMutation({ mutationFn: () => verifyInviteLink(tokenHash()), gcTime: 0, retry: false });
+}
+
+export function useUpdatePassword() {
+  return useMutation({ mutationFn: updatePassword, gcTime: 0, retry: false });
 }
 
 export function useFinishPasswordRecovery() {

@@ -69,4 +69,16 @@ describe('AuthProvider recovery lifecycle', () => {
     await act(async () => restore(null));
     expect(screen.getByText('passwordRecovery')).toBeTruthy();
   });
+
+  it('clears cached data when a link replaces the signed-in account', async () => {
+    getSession.mockResolvedValue(session);
+    const { client } = await renderWithQuery(<AuthProvider><Status /></AuthProvider>);
+    await screen.findByText('signedIn');
+    client.setQueryData(['diary', 'previous-account'], ['synthetic private data']);
+    await act(async () => listener(session, 'TOKEN_REFRESHED'));
+    expect(client.getQueryData(['diary', 'previous-account'])).toBeDefined();
+    const invited = { ...session, user: { ...session.user, id: 'synthetic-invited-user' } };
+    await act(async () => listener(invited, 'SIGNED_IN'));
+    expect(client.getQueryData(['diary', 'previous-account'])).toBeUndefined();
+  });
 });

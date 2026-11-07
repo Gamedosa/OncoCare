@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { credentialsSchema, profileSchema, recoveryLinkSchema, resetPasswordSchema } from './schemas';
+import { credentialsSchema, inviteLinkSchema, profileSchema, recoveryLinkSchema, resetPasswordSchema } from './schemas';
 
 describe('credentialsSchema', () => {
   it('trims the e-mail and requires both fields', () => {
@@ -38,6 +38,12 @@ describe('profileSchema', () => {
       expect(recoveryLinkSchema.safeParse({ token_hash: 'synthetic', type: 'invite' }).success).toBe(false);
       expect(recoveryLinkSchema.safeParse({ token_hash: ['first', 'second'], type: 'recovery' }).success).toBe(false);
       expect(recoveryLinkSchema.safeParse({ token_hash: '', type: 'recovery' }).success).toBe(false);
+    });
+
+    it('accepts only a single invite token', () => {
+      expect(inviteLinkSchema.safeParse({ token_hash: 'synthetic', type: 'invite' }).success).toBe(true);
+      expect(inviteLinkSchema.safeParse({ token_hash: 'synthetic', type: 'recovery' }).success).toBe(false);
+      expect(inviteLinkSchema.safeParse({ token_hash: ['first', 'second'], type: 'invite' }).success).toBe(false);
     });
   });
 

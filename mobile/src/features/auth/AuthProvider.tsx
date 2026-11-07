@@ -25,15 +25,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     let receivedSessionEvent = false;
+    let currentUserId: string | null | undefined;
     getSession()
       .catch(() => null)
       .then((current) => {
         if (!active || receivedSessionEvent) return;
+        currentUserId = current?.user.id ?? null;
         setSession(current);
         setRestored(true);
       });
     const unsubscribe = onSessionChange((next, event) => {
       receivedSessionEvent = true;
+      const nextUserId = next?.user.id ?? null;
+      // An invite or recovery link can replace the signed-in account on a shared device.
+      if (currentUserId && nextUserId !== currentUserId) queryClient.clear();
+      currentUserId = nextUserId;
       setRestored(true);
       setSession(next);
       if (event === 'PASSWORD_RECOVERY') {

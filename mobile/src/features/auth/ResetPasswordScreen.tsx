@@ -6,7 +6,7 @@ import { Button, colors, font, Header, Notice, Screen, TextField } from '@/share
 
 import { useAuth } from './AuthProvider';
 import { isNetworkError, OFFLINE_MESSAGE } from './authErrors';
-import { useFinishPasswordRecovery, useSignOut, useUpdateRecoveredPassword, useVerifyRecoveryLink } from './hooks';
+import { useFinishPasswordRecovery, useSignOut, useUpdatePassword, useVerifyRecoveryLink } from './hooks';
 import { recoveryLinkSchema, resetPasswordSchema } from './schemas';
 
 export function ResetPasswordScreen() {
@@ -18,7 +18,7 @@ export function ResetPasswordScreen() {
     return parsed.success ? parsed.data.token_hash : '';
   });
   const verify = useVerifyRecoveryLink(() => token);
-  const update = useUpdateRecoveredPassword();
+  const update = useUpdatePassword();
   const finish = useFinishPasswordRecovery();
   const leave = useSignOut();
   const [verified, setVerified] = useState(false);

@@ -18,11 +18,11 @@ jest.mock('expo-router', () => ({
 }));
 jest.mock('./AuthProvider', () => ({ useAuth: () => ({ status: mockStatus }) }));
 jest.mock('./authRepository', () => ({
-  verifyRecoveryLink: jest.fn(), updateRecoveredPassword: jest.fn(),
+  verifyRecoveryLink: jest.fn(), updatePassword: jest.fn(),
   signOut: jest.fn(),
 }));
 const verify = jest.mocked(repository.verifyRecoveryLink);
-const update = jest.mocked(repository.updateRecoveredPassword);
+const update = jest.mocked(repository.updatePassword);
 const signOut = jest.mocked(repository.signOut);
 
 async function openForm() {

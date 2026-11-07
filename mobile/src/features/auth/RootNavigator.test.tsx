@@ -57,4 +57,11 @@ describe('recovery route availability', () => {
     expect(screen.getByText('loading gate')).toBeTruthy();
     expect(screen.queryByText('patient')).toBeNull();
   });
+
+  it('keeps the invite callback mounted while the invited profile loads', async () => {
+    mockSegments = ['accept-invite'];
+    await render(<RootLayout />);
+    expect(screen.getByText('accept-invite')).toBeTruthy();
+    expect(screen.queryByText('loading gate')).toBeNull();
+  });
 });

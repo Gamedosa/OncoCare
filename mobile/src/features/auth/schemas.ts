@@ -23,6 +23,11 @@ export const recoveryLinkSchema = z.object({
   type: z.literal('recovery'),
 });
 
+export const inviteLinkSchema = z.object({
+  token_hash: z.string().min(1).max(2048),
+  type: z.literal('invite'),
+});
+
 export const roleSchema = z.enum(['patient', 'psychologist']);
 
 export type Role = z.infer<typeof roleSchema>;

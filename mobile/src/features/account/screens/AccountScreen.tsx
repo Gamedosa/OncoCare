@@ -1,10 +1,12 @@
 import { useRouter } from 'expo-router';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { useSignedInAuth } from '@/features/auth/AuthProvider';
 import { useSignOut } from '@/features/auth/hooks';
-import { Button, Card, colors, font, Header, Notice, Screen, spacing } from '@/shared/ui';
+import { unlinkErrorMessage } from '@/features/links/errors';
+import { useUnlinkPatient } from '@/features/links/hooks';
+import { Button, Card, colors, ConfirmDialog, font, Header, Notice, Screen, spacing } from '@/shared/ui';
 
 import { useLinkedPsychologist } from '../hooks';
 
@@ -31,7 +33,7 @@ export function AccountScreen() {
           </Text>
           <Text style={styles.text}>
             Seus relatos são visíveis apenas para você e para o psicólogo vinculado a você. Ele pode ler os relatos, mas
-            não pode editá-los.
+            não pode editá-los. Você pode continuar registrando relatos sem um psicólogo vinculado.
           </Text>
           {/* The full consent/privacy text is still "a definir" (Docs/telas.md). */}
           <Notice>O termo de consentimento e privacidade completo estará disponível em breve.</Notice>
@@ -47,6 +49,21 @@ export function AccountScreen() {
 
 function LinkedPsychologistField({ patientId }: { patientId: string }) {
   const query = useLinkedPsychologist(patientId);
+  const unlink = useUnlinkPatient();
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const confirm = async () => {
+    const psychologistId = pendingId;
+    setPendingId(null);
+    if (!psychologistId) return;
+    setSuccess(false);
+    try {
+      await unlink.mutateAsync({ patientId, psychologistId });
+      setSuccess(true);
+    } catch {
+      // The error is shown below.
+    }
+  };
   let value: ReactNode;
   if (query.isPending) value = <ActivityIndicator color={colors.primary} accessibilityLabel="Carregando psicólogo" />;
   else if (query.isError)
@@ -57,7 +74,32 @@ function LinkedPsychologistField({ patientId }: { patientId: string }) {
     );
   else if (!query.data) value = 'Nenhum psicólogo vinculado';
   else value = query.data.displayName ?? 'Nome não informado';
-  return <Field label="Psicólogo vinculado" value={value} />;
+  const linkedId = query.data?.id;
+  return (
+    <>
+      <Field label="Psicólogo vinculado" value={value} />
+      {success ? <Notice tone="success">Vínculo encerrado. Seu diário continua disponível para você.</Notice> : null}
+      {unlink.isError ? <Notice tone="error">{unlinkErrorMessage(unlink.error)}</Notice> : null}
+      {linkedId ? (
+        <Button variant="secondary" loading={unlink.isPending} onPress={() => {
+          unlink.reset();
+          setPendingId(linkedId);
+        }}>
+          Encerrar vínculo
+        </Button>
+      ) : null}
+      <ConfirmDialog
+        visible={pendingId !== null}
+        title="Encerrar vínculo?"
+        message="Ao confirmar, seu psicólogo não poderá mais acessar seus relatos e áudios pelo aplicativo. Seus registros continuam disponíveis para você, e você pode continuar escrevendo sem um psicólogo vinculado."
+        confirmLabel="Encerrar vínculo"
+        cancelLabel="Voltar"
+        destructive
+        onConfirm={confirm}
+        onCancel={() => setPendingId(null)}
+      />
+    </>
+  );
 }
 
 function Field({ label, value }: { label: string; value: ReactNode }) {

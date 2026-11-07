@@ -229,6 +229,10 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: undefined
       }
+      unlink_patient: {
+        Args: { p_patient_id: string; p_psychologist_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "patient" | "psychologist"

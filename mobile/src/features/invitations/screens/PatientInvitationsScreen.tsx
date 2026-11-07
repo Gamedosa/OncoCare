@@ -55,8 +55,10 @@ export function PatientInvitationsScreen() {
   const currentName = linked.data ? linked.data.displayName ?? UNNAMED : null;
   const acceptMessage = (invitation: ReceivedInvitation) => {
     const name = invitation.psychologistName ?? UNNAMED;
-    const base = `${name} poderá ler e ouvir seus relatos, sem editá-los.`;
-    return currentName ? `${base} ${currentName} deixará de ter acesso aos seus relatos.` : base;
+    const base = `${name} poderá ler todos os seus relatos e ouvir seus áudios, incluindo os anteriores ao vínculo e os criados enquanto estiverem vinculados, sem editá-los.`;
+    return currentName
+      ? `${base} ${currentName} deixará de ter acesso aos seus relatos.`
+      : `${base} Se você já tiver outro profissional vinculado, ele deixará de ter acesso aos seus relatos.`;
   };
 
   let body;
@@ -71,7 +73,7 @@ export function PatientInvitationsScreen() {
       <Card key={invitation.id} style={styles.card}>
         <Text style={styles.name}>{invitation.psychologistName ?? UNNAMED}</Text>
         <Text style={styles.text}>
-          convidou você para acompanhar seu diário. Se aceitar, poderá ler e ouvir seus relatos, sem editá-los.
+          convidou você para acompanhar seu diário. Se aceitar, poderá ler e ouvir seus relatos anteriores e futuros enquanto houver vínculo, sem editá-los.
         </Text>
         {currentName ? (
           <Text style={styles.text}>Ao aceitar, este convite substitui o acompanhamento atual com {currentName}.</Text>

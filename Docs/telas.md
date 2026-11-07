@@ -14,8 +14,11 @@ Guia para o protótipo no Figma e a implementação em React Native. Reflete as 
 
 ```text
 Login ─┬─ Paciente ── [Consentimento, 1º acesso] ── Histórico ─┬─ Novo relato ── Gravação de áudio
-       │                                                       └─ Detalhe ── Editar relato ── Gravação de áudio
-       └─ Psicólogo ── Pacientes vinculadas ── Relatos da paciente ── Detalhe (somente leitura)
+       │                                                       ├─ Detalhe ── Editar relato ── Gravação de áudio
+       │                                                       └─ Convites (aceitar/recusar)
+       └─ Psicólogo ── Pacientes vinculadas ─┬─ Relatos da paciente ── Detalhe (somente leitura)
+                                             └─ Convidar paciente (convites pendentes)
+Link do e-mail de convite ── Validar convite ── Criar senha ── Convites
 Ambos: Conta (sair)
 ```
 
@@ -27,7 +30,7 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 
 - E-mail, senha (com mostrar/ocultar), entrar, "Esqueci minha senha".
 - Erro genérico ("E-mail ou senha incorretos"), sem revelar se o e-mail existe.
-- Sem botão de cadastro público: criação de contas e vínculos é **a definir** (ver pendências).
+- Sem botão de cadastro público: pacientes entram por convite do psicólogo (C4); contas de psicólogos são criadas manualmente.
 
 ### C2. Recuperar senha
 
@@ -35,7 +38,13 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 - Link de uso único abre a tela de redefinição na web ou no app. A validação explícita do link ocorre no Supabase; sessão comum não substitui essa validação.
 - Nova senha (mínimo atual de 6 caracteres, sujeito à política do servidor) e confirmação. Link inválido/expirado/usado permite solicitar outro; falhas de rede permitem nova tentativa.
 - Após salvar, encerrar sessões e voltar ao login. Falha de encerramento permite repeti-lo sem alterar novamente a senha.
-- Configuração de template/URLs e limitações do Expo Go em [mobile/README.md](../mobile/README.md#configurar-a-recuperação-de-senha). Cadastro e primeiro acesso obrigatório continuam fora deste incremento.
+- Configuração de template/URLs e limitações do Expo Go em [mobile/README.md](../mobile/README.md#configurar-a-recuperação-de-senha). 
+### C4. Aceitar convite (link do e-mail)
+
+- Abre pelo link do e-mail; o token sai da URL. A pessoa toca em "Validar convite" antes de qualquer verificação.
+- Se outra conta estiver aberta no aparelho, avisar que a sessão será substituída.
+- Criar senha com confirmação (mínimo de 6 caracteres) e seguir para P-Convites.
+- Link inválido, expirado ou usado: mensagem neutra, pedir novo convite ou entrar/usar "Esqueci minha senha".
 
 ### C3. Conta
 
@@ -86,12 +95,20 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 - Áudio: ouvir, substituir (nova gravação) ou remover. Remover só é permitido se houver texto não vazio; caso contrário, explicar que o relato precisa de texto ou áudio.
 - Exclusão de relatos não faz parte do MVP.
 
+### P-Convites. Convites de acompanhamento
+
+- Aviso no topo do histórico quando houver convite pendente.
+- Cada convite mostra o nome do psicólogo, que ele poderá ler e ouvir os relatos sem editá-los e a validade.
+- Se já houver psicólogo vinculado, avisar que aceitar substitui o acompanhamento atual e que o anterior perde o acesso.
+- Aceitar e recusar pedem confirmação. Recusar não afeta o diário nem a conta.
+
 ## Telas do psicólogo
 
 ### S1. Pacientes vinculadas
 
 - Lista com nome de exibição e data do último relato. Busca por nome se a lista for longa.
-- Estado vazio: "Nenhuma paciente vinculada".
+- Estado vazio: "Nenhuma paciente vinculada", sugerindo convidar.
+- Ação "Convidar paciente" (S4).
 - Sem indicadores de risco ou alertas (fora do MVP).
 
 ### S2. Relatos da paciente
@@ -102,6 +119,13 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 
 - Igual a P5, sem "Editar" e sem ações de escrita. Player de áudio disponível.
 - Se o vínculo for removido, a próxima requisição falha: voltar para S1 com mensagem neutra.
+
+### S4. Convidar paciente
+
+- Nome e e-mail da paciente; explicar que ela decide se aceita e que o acesso é somente leitura.
+- Confirmação neutra após o envio (e-mail para contas novas ou convite no app para contas existentes).
+- Lista de convites pendentes com validade (ou "Convite expirado"), "Reenviar" e "Cancelar convite" com confirmação.
+- Erros: paciente já vinculada, e-mail que não pode ser convidado, limite de envio de e-mails, sem internet.
 
 ## Estados obrigatórios
 
@@ -122,7 +146,7 @@ Desenhar para cada tela de lista/detalhe e envio:
 | Tema | Pergunta |
 |---|---|
 | Escala de humor | Formato (emoji, escala numérica, palavras) e intervalo. |
-| Cadastro e vínculo | Quem cria contas, como paciente e psicólogo são vinculados (ex.: convite) e como trocar/remover o vínculo. |
+| Desvínculo | Como a paciente ou o psicólogo encerram o vínculo sem um novo convite. Cadastro de psicólogos (hoje manual). |
 | Consentimento | Texto, base legal LGPD, recusa e revogação. |
 | Retenção | Prazo e exclusão de relatos/áudios e da conta. |
 | Emergência | Texto e canais de apoio exibidos no app. |

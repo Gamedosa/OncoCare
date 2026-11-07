@@ -16,7 +16,7 @@ npm start              # Expo Go / emulador (leia o QR code)
 
 O `.env` não é versionado e só pode conter valores públicos (`EXPO_PUBLIC_*`). Nunca use a service role key no app.
 
-Contas de teste: são criadas no painel do Supabase e vinculadas por SQL. O app não tem cadastro nem vínculo pelo cliente (decisão pendente).
+Contas de teste: psicólogos são criados no painel do Supabase (perfil por SQL). Pacientes são convidadas pelo psicólogo no app; veja [Configurar convites de pacientes](#configurar-convites-de-pacientes).
 
 ## Verificações
 
@@ -47,6 +47,7 @@ src/
     diary/                relatos: domínio, repositório, hooks, componentes e telas da paciente
     patients/             pacientes vinculadas e telas somente leitura do psicólogo
     account/              tela de conta dos dois papéis
+    invitations/          convites: envio pelo psicólogo, aceite/recusa pela paciente
     audio/                download autenticado, player e cópias temporárias de áudio
   shared/
     supabase/             cliente, sessão em SecureStore (nativo) e tipos gerados
@@ -72,7 +73,8 @@ Fluxo de dados: **tela → hooks (TanStack Query) → repositório → Supabase*
 | Áudio: ouvir | Player integrado ao detalhe dos dois papéis; download autenticado sob demanda, reproduzir/pausar e nova tentativa. Validação em aparelhos ainda pendente. |
 | Áudio: gravar e enviar | Implementado para novos relatos e para adicionar áudio a relatos de texto, com prévia, cancelamento da gravação e recuperação de falhas de envio/escrita. Validação em aparelhos/Storage reais pendente. |
 | Áudio: substituir/remover áudio salvo | Implementado na edição; confirma a alteração no banco antes de excluir o arquivo antigo. Remoção exige texto; falha de limpeza permite nova tentativa sem reenviar. Testes automatizados e typecheck passaram; validação manual pendente. |
-| Consentimento, escala de humor, cadastro/vínculo, rascunhos offline | Dependem de decisões em aberto ([Docs/telas.md](../Docs/telas.md)). |
+| Convites (vínculo) | Psicólogo convida por nome/e-mail, reenvia e cancela pendentes; paciente valida o link, cria a senha e aceita ou recusa. Testes SQL, da Edge Function e do app passaram; validação com e-mail real pendente. |
+| Consentimento, escala de humor, rascunhos offline | Dependem de decisões em aberto ([Docs/telas.md](../Docs/telas.md)). |
 
 Validações dos incrementos anteriores: typecheck, testes unitários e de tela, build web e consultas somente leitura no OncoCare-Dev (isolamento entre pacientes e psicólogos). Execução em aparelhos iOS/Android reais ainda precisa ser validada.
 
@@ -98,6 +100,31 @@ Após validar, a navegação fica no fluxo de recuperação, sem depender de car
 
 Tokens são retirados da URL visível após a abertura e não são enviados a logs pelo app. Hospedagem/proxies devem omitir parâmetros sensíveis dos logs e usar `Referrer-Policy: no-referrer`; o primeiro acesso HTTP ainda contém o token. Use HTTPS fora do localhost. O Supabase controla validade/uso único do token e proteção dos dados em repouso; sessões continuam usando SecureStore no nativo e localStorage na web. Não compartilhe links de recuperação.
 
-O formulário mantém sua validação apenas durante a abertura atual; recarregar ou encerrar o app após consumir o link exige solicitar outro link para redefinir. Isso não implementa cadastro, convite, primeiro acesso obrigatório ou consentimento de vínculo.
+O formulário mantém sua validação apenas durante a abertura atual; recarregar ou encerrar o app após consumir o link exige solicitar outro link para redefinir.
 
 Validação manual pendente: solicitar e-mail com conta fictícia; abrir na web/Android/iOS com app fechado e aberto; testar expiração/reuso, confirmação divergente, perda de rede, encerramento das sessões e login com a nova senha. Nenhuma configuração remota é aplicada pelos testes automatizados.
+
+## Configurar convites de pacientes
+
+Componentes: migration [`20261107000000_patient_invitations.sql`](../supabase/migrations/20261107000000_patient_invitations.sql), Edge Function [`invite-patient`](../supabase/functions/invite-patient/index.ts) e template [`invite.html`](../supabase/templates/invite.html).
+
+Fluxo:
+
+1. O psicólogo informa nome e e-mail em **Pacientes → Convidar paciente**. O app chama a Edge Function, que verifica o JWT e o papel de psicólogo.
+2. E-mail sem conta (ou conta ainda não confirmada): o Auth cria a conta e envia o e-mail de convite. Conta de paciente já confirmada: nenhum e-mail é enviado; ela vê o convite ao entrar. E-mails de psicólogos ou do próprio remetente são recusados.
+3. A paciente abre o link (`/accept-invite`), toca em **Validar convite**, cria a senha e decide em **Convites** se aceita ou recusa. Pendências aparecem também no topo do histórico.
+4. Aceitar grava o vínculo (substituindo o anterior); recusar ou expirar (7 dias) mantém a conta sem vínculo. O psicólogo pode reenviar ou cancelar convites pendentes.
+
+O link do e-mail expira conforme `otp_expiry` do Auth (local: 1 h), antes dos 7 dias do convite. Se expirar, o psicólogo pode reenviar enquanto a conta não estiver confirmada; se a paciente já criou a senha, ela vê o convite no app (ou usa **Esqueci minha senha**).
+
+No projeto Supabase, configure manualmente:
+
+1. Aplique a migration (`supabase db push`, revisando antes com `--dry-run`) e publique a função: `npx supabase functions deploy invite-patient --use-api`. A função usa `verify_jwt = false` porque valida o JWT no código com `auth.getClaims` ([`config.toml`](../supabase/config.toml)), compatível com chaves legadas e assimétricas.
+2. **Redirect URLs**: inclua os retornos de `/accept-invite` equivalentes aos de recuperação (ex.: `http://localhost:8081/accept-invite`, `https://SEU-DOMINIO/accept-invite`, `oncocare://accept-invite`, `exp://SEU-HOST:PORTA/--/accept-invite`).
+3. **Email Templates → Invite user**: use [`../supabase/templates/invite.html`](../supabase/templates/invite.html). O link deve ser `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=invite`.
+4. Opcional: o secret `INVITE_REDIRECT_URL` (ex.: `https://SEU-DOMINIO/accept-invite`) fixa o retorno no servidor, ignorando o enviado pelo app.
+5. Configure SMTP próprio: o servidor de e-mail padrão do Supabase tem limite baixo de envios. O app mostra mensagem específica quando o limite é atingido.
+
+Privacidade: o psicólogo vê nome, e-mail e validade apenas dos convites que enviou; a paciente vê apenas o nome do psicólogo. Convites pendentes não dão acesso a perfil nem a relatos. A função não registra e-mails em log. O nome informado pelo psicólogo vira o nome de exibição só de contas novas; a paciente pode alterá-lo depois. Ao validar o link num aparelho com outra conta aberta, a sessão anterior é substituída e o cache local é limpo.
+
+Validação: `supabase/tests/patient_invitations.sql` (isolamento, transferência, expiração, recusa e cancelamento), testes Deno da função (`deno test` em `supabase/functions/invite-patient`) e testes do app. Validação manual com e-mail e aparelhos reais pendente.

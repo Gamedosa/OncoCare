@@ -79,6 +79,17 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
+
+        <!-- PatientInvitation -->
+        <mxCell id="cls_invitation" value="&lt;b&gt;PatientInvitation&lt;/b&gt;&lt;hr&gt;+ id: string&lt;br&gt;+ psicologoId: string&lt;br&gt;+ pacienteId: string&lt;br&gt;+ email: string&lt;br&gt;+ nomePaciente: string&lt;br&gt;+ status: &quot;pendente&quot; | &quot;aceito&quot; | &quot;recusado&quot; | &quot;cancelado&quot;&lt;br&gt;+ expiraEm: Date&lt;hr&gt;+ aceitar(): void (paciente; transfere o vinculo)&lt;br&gt;+ recusar(): void (paciente)&lt;br&gt;+ cancelar(): void (psicologo)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="800" y="480" width="320" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="r_invite_psych" value="envia 0..*" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none;" edge="1" parent="1" source="cls_psych" target="cls_invitation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r_invite_patient" value="recebe 0..*" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none;" edge="1" parent="1" source="cls_patient" target="cls_invitation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

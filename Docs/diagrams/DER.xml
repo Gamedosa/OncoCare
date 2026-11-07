@@ -66,6 +66,17 @@
         <mxCell id="rel_psych_note" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=none;" edge="1" parent="1" source="ent_psych" target="ent_note">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+
+        <!-- PatientInvitation -->
+        <mxCell id="ent_invitation" value="&lt;b&gt;PatientInvitation&lt;/b&gt;&lt;hr&gt;PK id&lt;br&gt;FK psicologo_id&lt;br&gt;FK paciente_id&lt;br&gt;email&lt;br&gt;nome_paciente&lt;br&gt;status (pendente | aceito | recusado | cancelado)&lt;br&gt;expira_em (7 dias)&lt;br&gt;criado_em&lt;br&gt;encerrado_em&lt;hr&gt;UNIQUE pendente por (psicologo, paciente)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="780" y="460" width="300" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_psych_invitation" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=none;" edge="1" parent="1" source="ent_psych" target="ent_invitation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_patient_invitation" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=none;" edge="1" parent="1" source="ent_patient" target="ent_invitation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

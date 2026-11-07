@@ -73,12 +73,13 @@ Fluxo de dados: **tela → hooks (TanStack Query) → repositório → Supabase*
 | Áudio: ouvir | Player integrado ao detalhe dos dois papéis; download autenticado sob demanda, reproduzir/pausar e nova tentativa. Validação em aparelhos ainda pendente. |
 | Áudio: gravar e enviar | Implementado para novos relatos e para adicionar áudio a relatos de texto, com prévia, cancelamento da gravação e recuperação de falhas de envio/escrita. Validação em aparelhos/Storage reais pendente. |
 | Áudio: substituir/remover áudio salvo | Implementado na edição; confirma a alteração no banco antes de excluir o arquivo antigo. Remoção exige texto; falha de limpeza permite nova tentativa sem reenviar. Testes automatizados e typecheck passaram; validação manual pendente. |
-| Convites (vínculo) | Psicólogo convida por nome/e-mail, reenvia e cancela pendentes; paciente valida o link, cria a senha e aceita ou recusa. Testes SQL, da Edge Function e do app passaram; validação com e-mail real pendente. |
+| Convites e vínculo | Psicólogo convida por nome/e-mail, reenvia e cancela pendentes; paciente valida o link, cria a senha e aceita ou recusa. Fluxo principal validado manualmente na web com e-mail e áudio; demais cenários e dispositivos nativos pendentes. |
+| Desvínculo | Paciente pode encerrar em Conta; psicólogo, na tela de relatos da paciente. Requer a migration `20261107010000_unlink_patient.sql`. Validação manual após publicação pendente. |
 | Consentimento, escala de humor, rascunhos offline | Dependem de decisões em aberto ([Docs/telas.md](../Docs/telas.md)). |
 
 Validações dos incrementos anteriores: typecheck, testes unitários e de tela, build web e consultas somente leitura no OncoCare-Dev (isolamento entre pacientes e psicólogos). Execução em aparelhos iOS/Android reais ainda precisa ser validada.
 
-O usuário confirmou o teste manual do fluxo de gravação/envio com uma conta fictícia de paciente. A substituição/remoção de áudio é um incremento posterior: typecheck e os 103 testes da suíte passaram; validação manual desses novos fluxos ainda está pendente.
+O usuário confirmou na web o convite, a gravação/envio e a reprodução do áudio pelo psicólogo com uma conta de teste. A substituição/remoção de áudio ainda precisa de validação manual.
 
 O player não usa URLs públicas/assinadas nem guarda bytes no cache do TanStack Query. Na web usa uma URL `blob:` local; no nativo usa arquivo no cache privado do app. A cópia é liberada ao sair da tela, encerrar a sessão ou colocar o app em segundo plano; ao voltar, é necessário carregar novamente. Falhas de limpeza exibem aviso com nova tentativa. Encerramento abrupto do processo pode deixar arquivos no cache: limpeza após falhas e retenção operacional precisam ser definidas antes de usar dados reais. Veja [Docs/audio.md](../Docs/audio.md).
 
@@ -143,4 +144,12 @@ No projeto Supabase, configure manualmente:
 
 Privacidade: o psicólogo vê nome, e-mail e validade apenas dos convites que enviou; a paciente vê apenas o nome do psicólogo. Convites pendentes não dão acesso a perfil nem a relatos. A função não registra e-mails em log. O nome informado pelo psicólogo vira o nome de exibição só de contas novas; a paciente pode alterá-lo depois. Ao validar o link num aparelho com outra conta aberta, a sessão anterior é substituída e o cache local é limpo.
 
-Validação: `supabase/tests/patient_invitations.sql` (isolamento, transferência, expiração, recusa e cancelamento), testes Deno da função (`deno test` em `supabase/functions/invite-patient`) e testes do app. Validação manual com e-mail e aparelhos reais pendente.
+Validação: `supabase/tests/patient_invitations.sql` (isolamento, transferência, expiração, recusa e cancelamento), testes Deno da função (`deno test` em `supabase/functions/invite-patient`) e testes do app. Convite e acesso foram testados na web; outros cenários e aparelhos nativos permanecem pendentes.
+
+## Encerrar o vínculo
+
+Após aplicar a migration [`20261107010000_unlink_patient.sql`](../supabase/migrations/20261107010000_unlink_patient.sql), a paciente pode encerrar o vínculo em **Conta**, e o psicólogo na tela de relatos da paciente. Ambos recebem uma confirmação antes da alteração. A função no banco autoriza somente as partes e verifica os dois IDs, evitando encerrar um vínculo diferente daquele confirmado. O RLS impede novos acessos aos relatos e áudios pelo profissional após o desvínculo; cópias previamente obtidas não podem ser revogadas.
+
+O diário permanece disponível para a paciente, que pode continuar criando e editando relatos sem vínculo. Ao aceitar outro convite, ela autoriza acesso a todos os relatos e áudios anteriores e aos futuros durante o vínculo. O aviso não substitui a definição da base legal e do texto de privacidade antes do uso real.
+
+Os testes [`unlink_patient.sql`](../supabase/tests/unlink_patient.sql) usam dados sintéticos e verificam autorização, vínculo alterado, acesso ao áudio e continuidade do diário. Rode-os apenas em banco local isolado. Após publicar a migration, teste manualmente os dois lados e regenere os tipos do banco.

@@ -49,7 +49,7 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 ### C3. Conta
 
 - Nome de exibição, papel, sair.
-- Paciente: nome do psicólogo vinculado (ou "Nenhum psicólogo vinculado") e acesso ao texto de privacidade/consentimento.
+- Paciente: nome do psicólogo vinculado (ou "Nenhum psicólogo vinculado"), ação para encerrar o vínculo com confirmação e acesso ao texto de privacidade/consentimento. Sem vínculo, pode continuar criando e editando relatos.
 
 ## Telas da paciente
 
@@ -98,7 +98,7 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 ### P-Convites. Convites de acompanhamento
 
 - Aviso no topo do histórico quando houver convite pendente.
-- Cada convite mostra o nome do psicólogo, que ele poderá ler e ouvir os relatos sem editá-los e a validade.
+- Cada convite mostra o nome do psicólogo, que ele poderá ler e ouvir todos os relatos e áudios anteriores e futuros enquanto houver vínculo, sem editá-los, e a validade.
 - Se já houver psicólogo vinculado, avisar que aceitar substitui o acompanhamento atual e que o anterior perde o acesso.
 - Aceitar e recusar pedem confirmação. Recusar não afeta o diário nem a conta.
 
@@ -119,6 +119,7 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 
 - Igual a P5, sem "Editar" e sem ações de escrita. Player de áudio disponível.
 - Se o vínculo for removido, a próxima requisição falha: voltar para S1 com mensagem neutra.
+- Ação "Encerrar vínculo" com confirmação: informar que o profissional perderá acesso aos relatos e áudios e que os registros continuam com a paciente.
 
 ### S4. Convidar paciente
 
@@ -146,7 +147,7 @@ Desenhar para cada tela de lista/detalhe e envio:
 | Tema | Pergunta |
 |---|---|
 | Escala de humor | Formato (emoji, escala numérica, palavras) e intervalo. |
-| Desvínculo | Como a paciente ou o psicólogo encerram o vínculo sem um novo convite. Cadastro de psicólogos (hoje manual). |
+| Cadastro de psicólogos | Contas são criadas manualmente; eventual automação e verificação profissional permanecem a definir. |
 | Consentimento | Texto, base legal LGPD, recusa e revogação. |
 | Retenção | Prazo e exclusão de relatos/áudios e da conta. |
 | Emergência | Texto e canais de apoio exibidos no app. |

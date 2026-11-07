@@ -17,6 +17,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      diary_audio_deletion_queue: {
+        Row: { entry_id: string; patient_id: string; audio_path: string; created_at: string }
+        Insert: { entry_id: string; patient_id: string; audio_path: string; created_at?: string }
+        Update: { entry_id?: string; patient_id?: string; audio_path?: string; created_at?: string }
+        Relationships: []
+      }
       diary_entries: {
         Row: {
           audio_object_id: string | null
@@ -191,6 +197,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_own_diary_entry: {
+        Args: { p_entry_id: string }
+        Returns: undefined
+      }
+      finish_diary_audio_deletion: {
+        Args: { p_entry_id: string }
+        Returns: undefined
+      }
       accept_patient_invitation: {
         Args: { p_invitation_id: string }
         Returns: undefined

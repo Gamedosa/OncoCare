@@ -1,0 +1,32 @@
+meta {
+  name: Update entry - Patient 1 own
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/rest/v1/diary_entries?id=eq.{{patient1TestEntryId}}
+  body: json
+  auth: none
+}
+
+headers {
+  apikey: {{publishableKey}}
+  Authorization: Bearer {{patient1AccessToken}}
+  Prefer: return=representation
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "content": "Relato ficticio atualizado via Bruno."
+  }
+}
+
+tests {
+  test("patient 1 can update own entry", function() {
+    expect(res.status).to.equal(200);
+    expect(res.body.length).to.equal(1);
+    expect(res.body[0].patient_id).to.equal("50c01418-6770-47c4-9bed-74c09f066382");
+  });
+}

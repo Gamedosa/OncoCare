@@ -1,0 +1,24 @@
+meta {
+  name: List diary - Patient 2
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/rest/v1/diary_entries?select=patient_id,content
+  body: none
+  auth: none
+}
+
+headers {
+  apikey: {{publishableKey}}
+  Authorization: Bearer {{patient2AccessToken}}
+}
+
+tests {
+  test("patient 2 sees only patient 2 entries", function() {
+    expect(res.status).to.equal(200);
+    expect(res.body.length).to.be.greaterThan(0);
+    expect(res.body.every((entry) => entry.patient_id === "b2c77a23-7a93-4c0d-8a78-5b924cefcd29")).to.equal(true);
+  });
+}

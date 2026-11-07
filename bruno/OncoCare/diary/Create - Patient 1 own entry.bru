@@ -1,0 +1,38 @@
+meta {
+  name: Create entry - Patient 1 own
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/rest/v1/diary_entries
+  body: json
+  auth: none
+}
+
+headers {
+  apikey: {{publishableKey}}
+  Authorization: Bearer {{patient1AccessToken}}
+  Prefer: return=representation
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "patient_id": "50c01418-6770-47c4-9bed-74c09f066382",
+    "content": "Relato ficticio criado via Bruno para teste."
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && Array.isArray(res.body) && res.body[0]?.id) {
+    bru.setEnvVar('patient1TestEntryId', res.body[0].id);
+  }
+}
+
+tests {
+  test("patient 1 can create own entry", function() {
+    expect(res.status).to.equal(201);
+    expect(res.body[0].patient_id).to.equal("50c01418-6770-47c4-9bed-74c09f066382");
+  });
+}

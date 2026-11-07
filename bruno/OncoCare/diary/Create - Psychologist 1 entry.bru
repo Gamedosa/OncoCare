@@ -1,0 +1,30 @@
+meta {
+  name: Create entry - Psychologist 1 should fail
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/rest/v1/diary_entries
+  body: json
+  auth: none
+}
+
+headers {
+  apikey: {{publishableKey}}
+  Authorization: Bearer {{psychologist1AccessToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "patient_id": "50c01418-6770-47c4-9bed-74c09f066382",
+    "content": "Tentativa ficticia de relato pelo psicologo."
+  }
+}
+
+tests {
+  test("psychologist 1 cannot create entries", function() {
+    expect(res.status).to.equal(403);
+  });
+}

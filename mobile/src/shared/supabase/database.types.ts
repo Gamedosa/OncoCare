@@ -212,6 +212,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      list_diary_days: {
+        Args: { p_patient_id: string; p_before?: string }
+        Returns: { day: string; entry_count: number; has_audio: boolean }[]
+      }
+      list_diary_day_entries: {
+        Args: { p_patient_id: string; p_day: string; p_page?: number }
+        Returns: Database["public"]["Tables"]["diary_entries"]["Row"][]
+      }
       begin_account_deletion: { Args: { p_user_id: string }; Returns: undefined }
       list_account_deletion_objects: { Args: { p_user_id: string }; Returns: { bucket_id: string; name: string }[] }
       mark_notification_read: { Args: { p_notification_id: string }; Returns: undefined }

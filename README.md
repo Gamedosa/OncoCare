@@ -1,4 +1,6 @@
-# OncoCare
+# ElaConta
+
+Nome público do aplicativo. O repositório, scheme `oncocare`, slug e projetos Supabase mantêm os identificadores técnicos existentes para preservar vínculos e links.
 
 Diário online para mulheres em tratamento de câncer de mama, permitindo que registrem relatos diários (emocionais, sintomas, bem-estar) que podem ser acompanhados por um psicólogo responsável.
 
@@ -22,6 +24,8 @@ Oferecer um espaço seguro e simples para que pacientes registrem seus sentiment
 - [x] Exclusão da própria conta com senha atual; pacientes apagam seus registros, psicólogos preservam as contas e relatos das pacientes.
 - [x] Central de notificações em Conta: convites, vínculos, novos relatos e avisos administrativos, com indicação de leitura.
 - [x] Histórico de relatos da paciente.
+- [x] Histórico agrupado por dia (horário de Brasília), com contagem completa e acesso aos relatos individuais.
+- [x] Edição de nome e solicitação de alteração de e-mail pelos dois perfis; confirmação pelo Supabase Auth.
 - [x] Psicólogo visualiza lista de pacientes vinculadas (somente leitura).
 - [x] Psicólogo lê e ouve os relatos das pacientes vinculadas (somente leitura).
 - [ ] Psicólogo adicionar notas no perfil da paciente (futuro, pós-MVP).
@@ -40,6 +44,8 @@ Oferecer um espaço seguro e simples para que pacientes registrem seus sentiment
 - Encerrar o vínculo e continuar usando o diário sem psicólogo.
 - Excluir a própria conta e todos os seus relatos e áudios.
 - Consultar notificações e marcá-las como lidas.
+- Editar nome e solicitar troca do e-mail de acesso.
+- Abrir o bloco de um dia e consultar seus registros individuais.
 
 ### Psicólogo
 
@@ -49,6 +55,8 @@ Oferecer um espaço seguro e simples para que pacientes registrem seus sentiment
 - Encerrar o vínculo com uma paciente.
 - Excluir a própria conta sem apagar contas, relatos ou áudios das pacientes.
 - Consultar notificações e marcá-las como lidas.
+- Editar o próprio nome e solicitar troca do próprio e-mail de acesso.
+- Abrir os blocos diários das pacientes vinculadas, somente leitura.
 
 No MVP o psicólogo tem papel **somente de acompanhamento**, sem ações de escrita. A capacidade de adicionar notas no perfil da paciente fica para uma versão futura.
 
@@ -93,6 +101,10 @@ O desvínculo por qualquer uma das partes requer a aplicação da migration `202
 A exclusão de conta e a central de notificações ampliam o MVP por solicitação explícita. Requerem as migrations `20261107030000_account_deletion.sql` e `20261107040000_notifications.sql`, além da publicação de `delete-account`. A exclusão exige senha atual e confirmação; apaga os dados no ambiente ativo e remove arquivos pela API do Storage antes de excluir o usuário do Auth. Falhas de limpeza são informadas e permitem nova tentativa, inclusive pelo administrador no painel. Ao excluir um psicólogo, somente seus vínculos são removidos; pacientes e seus diários permanecem. Procedimento administrativo e publicação em [mobile/README.md](mobile/README.md#exclusão-de-contas-e-notificações).
 
 Notificações são internas ao app, sem push/e-mail ou classificação de risco. Não incluem nomes, e-mails, texto, humor ou áudio dos relatos. A paciente sem psicólogo vê “Sem vínculo com psicólogo” em Conta. Backups, logs e cópias previamente obtidas não são apagados instantaneamente pelo app; política de retenção e procedimentos operacionais continuam pendentes.
+
+O histórico da paciente e a visualização do psicólogo mostram um bloco por dia no fuso `America/Sao_Paulo`, com número discreto de registros e indicador de áudio. Ao abrir, os registros daquele dia são listados individualmente com paginação; textos e áudios não são mesclados. As contagens são calculadas no banco com RLS, não a partir de uma página parcial. Requer a migration `20261107050000_diary_days.sql` antes de publicar o app.
+
+Em Conta, ambos os perfis podem editar o próprio nome e solicitar alteração de e-mail pelo Supabase Auth. O e-mail atual permanece válido durante a confirmação; configure os links de `/confirm-email`, confirmação segura e o template de e-mail conforme [mobile/README.md](mobile/README.md#editar-nome-e-e-mail). A identidade ElaConta inclui telas, título web, ícones e templates. O símbolo existente de diário/laço foi reaproveitado; o domínio e identificadores técnicos não foram renomeados.
 
 As telas, fluxos e estados do aplicativo para o protótipo no Figma estão em [Docs/telas.md](Docs/telas.md).
 

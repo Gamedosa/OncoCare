@@ -1,6 +1,6 @@
-# OncoCare — app (Expo)
+# ElaConta — app (Expo)
 
-App multiplataforma (Android, iOS e web) do OncoCare, em Expo SDK 58 + React Native + TypeScript, usando o Supabase (Auth, Postgres com RLS e Storage) como backend.
+App multiplataforma (Android, iOS e web) do ElaConta, em Expo SDK 58 + React Native + TypeScript, usando o Supabase (Auth, Postgres com RLS e Storage) como backend. Scheme `oncocare`, slug, repositório e projetos Supabase mantêm seus identificadores técnicos.
 
 ## Como rodar
 
@@ -68,10 +68,10 @@ Fluxo de dados: **tela → hooks (TanStack Query) → repositório → Supabase*
 | Área | Situação |
 |---|---|
 | Login, recuperar senha, guardas por papel | Recuperação por link de uso único e formulário de nova senha implementados. Exige configurar template/redirects no Supabase; validação por e-mail e aparelhos pendente. |
-| Paciente: histórico, novo relato, detalhe, edição | Pronto (texto + humor provisório 1–5). |
+| Paciente: histórico, novo relato, detalhe, edição | Texto + humor provisório 1–5. Histórico por dia de Brasília com contagem completa; abrir o bloco lista todos os registros individuais, paginados. Requer migration `20261107050000_diary_days.sql`. |
 | Exclusão de relatos | A paciente exclui no detalhe após confirmação. Áudios ficam em fila persistente até a remoção pelo Storage; o histórico tenta a limpeza e oferece nova tentativa em caso de falha. Requer migration `20261107020000_delete_diary_entry.sql` e validação manual. |
-| Psicólogo: pacientes vinculadas, relatos e detalhe somente leitura | Pronto. |
-| Conta (os dois papéis) | Prévia dos Termos, notificações e exclusão da própria conta com senha/confirmação. Paciente sem vínculo é identificada explicitamente. Política de privacidade, consentimento e registro de aceite continuam pendentes. |
+| Psicólogo: pacientes vinculadas, relatos e detalhe somente leitura | Mesmo agrupamento diário da paciente, mantendo somente leitura e RLS. |
+| Conta (os dois papéis) | Edição do próprio nome, troca de e-mail via Auth com confirmação, prévia dos Termos, notificações e exclusão com senha. Paciente sem vínculo é identificada explicitamente. Política de privacidade, consentimento e registro de aceite continuam pendentes. |
 | Exclusão de conta | Edge Function remove dados próprios e arquivos antes do Auth. Falhas permitem concluir novamente. Excluir psicólogo remove vínculos, nunca contas/relatos das pacientes. Publicação e validação manual pendentes. |
 | Notificações | Central em Conta para convites/respostas/cancelamentos, vínculos/exclusões, novos relatos para o psicólogo e avisos administrativos. RLS própria, paginação, leitura persistente e atualização a cada 30 s enquanto a tela está ativa. Sem push/e-mail nem conteúdo sensível. |
 | Áudio: ouvir | Player integrado ao detalhe dos dois papéis; download autenticado sob demanda, reproduzir/pausar e nova tentativa. Validação em aparelhos ainda pendente. |
@@ -89,9 +89,39 @@ O player não usa URLs públicas/assinadas nem guarda bytes no cache do TanStack
 
 ## Prévia dos Termos de Uso
 
-Em **Conta → Ver termos de uso (prévia)**, ambos os perfis podem consultar a minuta de [`../Docs/TERMOS_DE_USO.md`](../Docs/TERMOS_DE_USO.md). Ela é uma prévia, não solicita nem registra aceite e não substitui a política de privacidade ou consentimentos específicos. Nome ElaConta e responsável são preenchidos apenas na prévia; CPF, contatos, datas e demais informações não definidas permanecem pendentes. O nome técnico do app e os links existentes não foram alterados.
+Em **Conta → Ver termos de uso (prévia)**, ambos os perfis podem consultar a minuta de [`../Docs/TERMOS_DE_USO.md`](../Docs/TERMOS_DE_USO.md). Ela é uma prévia, não solicita nem registra aceite e não substitui a política de privacidade ou consentimentos específicos. ElaConta é o nome público do app; o responsável é preenchido apenas na prévia, e CPF, contatos, datas e demais informações não definidas permanecem pendentes. Identificadores técnicos e links existentes não foram alterados.
 
 Após atualizar a minuta, execute `npm run sync:terms` em `mobile/` e inclua o `terms.json` gerado. Revise cláusulas, dados, contatos e recursos não implementados com assessoria jurídica antes de apresentar o documento como definitivo ou usar dados reais.
+
+## Editar nome e e-mail
+
+Em **Conta → Editar dados**, ambos os perfis editam o próprio nome (1–120 caracteres, sem espaços nas extremidades). O repositório atualiza apenas `profiles.display_name`; RLS e permissões de coluna impedem editar terceiros, papel ou vínculos. Salvar o nome atualiza o perfil/cache do app. Nome e e-mail têm ações separadas, evitando apresentar sucesso único em uma atualização parcial.
+
+O e-mail é carregado do usuário autenticado pelo Auth, nunca exposto em `profiles` para outros usuários. A ação **Solicitar troca de e-mail** usa `auth.updateUser` com retorno `/confirm-email`; o e-mail atual e o endereço pendente são mostrados separadamente. A interface não modifica e-mail diretamente no banco e não troca o endereço de acesso antes da confirmação do servidor.
+
+No painel Supabase do ambiente correto:
+
+1. **Authentication → Email → Secure email change**: mantenha a confirmação do e-mail antigo e do novo habilitada (local: `auth.email.double_confirm_changes = true`). A configuração remota é independente do arquivo local.
+2. **Redirect URLs**: adicione `http://localhost:8081/confirm-email`, `https://SEU-DOMINIO/confirm-email` e `oncocare://confirm-email`, ou o retorno Expo Go do ambiente em uso. Não remova links antigos. Use HTTPS fora do localhost.
+3. **Email Templates → Change Email Address**: configure o conteúdo de [`../supabase/templates/email-change.html`](../supabase/templates/email-change.html), com link `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=email_change`. O template padrão pode não ser compatível com a verificação explícita do app.
+4. Atualize os templates de convite/recuperação existentes e seus assuntos para ElaConta; altere o nome do remetente SMTP para ElaConta sem alterar usuário/senha SMTP. Arquivos versionados não atualizam automaticamente templates remotos.
+5. Teste com contas fictícias os dois links, endereço já utilizado, expiração/reuso, perda de rede e login após confirmação.
+
+A tela de confirmação exige toque explícito, verifica o token somente como `email_change`, avisa que o link pode substituir outra sessão aberta e retira o token da URL visível. Confirmar apenas o primeiro link não é apresentado como troca concluída. Não inclua tokens/e-mails em logs públicos; caches são isolados por conta e limpos quando a sessão muda. A confirmação de identidade do Auth não substitui consentimento para compartilhar relatos. Proteção em repouso segue o provedor.
+
+## Histórico agrupado por dia
+
+Aplique [`20261107050000_diary_days.sql`](../supabase/migrations/20261107050000_diary_days.sql) no ambiente autorizado **antes** de publicar o app: confira o projeto vinculado, revise `db push --remote --dry-run` pelo wrapper Docker e só então aplique. Não há nova Edge Function. Regenere os tipos do banco depois da aplicação.
+
+As funções `list_diary_days` e `list_diary_day_entries` são `security invoker` e mantêm o RLS existente: paciente própria ou psicólogo atualmente vinculado. O dia é definido por `created_at` em `America/Sao_Paulo`, incluindo regras históricas do fuso. O bloco tem a contagem completa (mesmo acima de 20 registros), indicação de áudio e abre todos os relatos individuais daquele dia; não funde registros nem muda datas/arquivos.
+
+Dias usam cursor exclusivo e páginas de 20 dias; a tela diária mantém páginas de 20 registros com lookahead. Limites de meia-noite são inclusivos no início e exclusivos no próximo dia. Criação, edição e exclusão invalidam as consultas do histórico/dias. Acesso do psicólogo continua somente leitura; desvínculo bloqueia novas consultas por RLS. Erros de carregamento/paginação são informados com nova tentativa.
+
+Testes: [`../supabase/tests/diary_days_profile.sql`](../supabase/tests/diary_days_profile.sql) verifica 25 registros no mesmo dia, paginação, contagens, meia-noite de Brasília, áudio, exclusão, isolamento e nome próprio. Executar somente em banco isolado com dados sintéticos. Teste manual em Auth/Storage reais e Android/iOS permanece necessário.
+
+## Identidade ElaConta
+
+Nome do app/título web, login, convite, permissão de microfone e templates usam ElaConta. Ícones Android/iOS, favicon e asset de splash reutilizam o símbolo de diário/laço de `assets/logo.png`, sem marcas padrão do scaffold. Scheme `oncocare`, slug `oncocare`, domínio atual e identificadores técnicos permanecem para não romper links e builds existentes. Mudanças de ícones/nome/permissão nativos exigem novo build instalado, não apenas atualização web.
 
 ## Exclusão de contas e notificações
 

@@ -19,7 +19,9 @@ Login ─┬─ Paciente ── [Consentimento, 1º acesso] ── Histórico �
        └─ Psicólogo ── Pacientes vinculadas ─┬─ Relatos da paciente ── Detalhe (somente leitura)
                                              └─ Convidar paciente (convites pendentes)
 Link do e-mail de convite ── Validar convite ── Criar senha ── Convites
-Ambos: Conta (notificações, termos, excluir conta, sair)
+Ambos: Conta (editar nome/e-mail, notificações, termos, excluir conta, sair)
+Históricos: bloco do dia (contagem) → registros do dia → detalhe individual
+Link de troca de e-mail → confirmar link (também no outro endereço, se exigido)
 ```
 
 O app detecta o papel pelo perfil do servidor após o login; não há escolha de papel pela pessoa usuária.
@@ -49,6 +51,7 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 ### C3. Conta
 
 - Nome de exibição, papel, sair.
+- Nome editável (1–120 caracteres), ação “Salvar nome”. E-mail atual e alteração pendente carregados do Auth; “Solicitar troca de e-mail” exige confirmação nos endereços pelo Supabase. Nome e e-mail têm salvamentos separados e erros explícitos.
 - Paciente: nome do psicólogo vinculado (ou "Sem vínculo com psicólogo"), ação para encerrar o vínculo com confirmação e acesso ao texto de privacidade/consentimento. Sem vínculo, pode continuar criando e editando relatos.
 - Ambos: prévia dos Termos de Uso na conta, identificada como minuta, sem solicitação ou registro de aceite.
 - Seção Notificações com quantidade não lida, acesso à central, estados vazio/erro, paginação e ação “Marcar como lida”. Eventos: convite/resposta/cancelamento, mudanças de vínculo, exclusão do psicólogo, novo relato para o psicólogo e avisos administrativos. Sem dados sensíveis, push/e-mail ou monitoramento clínico.
@@ -66,7 +69,8 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 
 ### P2. Histórico de relatos
 
-- Lista em ordem cronológica decrescente: data/hora, humor, trecho do texto e indicador de áudio (ícone + texto "Áudio", não apenas ícone).
+- Blocos por dia em ordem cronológica decrescente no fuso de Brasília (`America/Sao_Paulo`), com data, número discreto de registros e indicação de áudio. Uma única caixa por dia mesmo com mais de 20 relatos; a contagem vem do banco.
+- Ao abrir um bloco, mostrar todos os registros daquele dia (paginados): data/hora, humor, trecho do texto e indicador de áudio. Abrir um registro leva ao detalhe individual; não mesclar textos ou áudios.
 - Botão principal "Novo relato".
 - Estado vazio acolhedor, com convite para o primeiro relato.
 - Paginação/rolagem infinita.
@@ -119,6 +123,7 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 ### S2. Relatos da paciente
 
 - Cabeçalho com nome da paciente; lista igual a P2, sem botão de novo relato.
+- Mesmo agrupamento e contagem por dia de Brasília. Abrir o dia lista os registros individuais, mantendo somente leitura.
 
 ### S3. Detalhe do relato (somente leitura)
 

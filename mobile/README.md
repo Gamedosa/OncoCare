@@ -26,6 +26,22 @@ npm test                                                     # jest (jest-expo +
 CI=1 npx expo export --platform web --output-dir /tmp/onco-web  # build web
 ```
 
+### Dependencias transitivas de seguranca
+
+O `package.json` fixa overrides seletivos de `glob` 14.0.4 e `minimatch` 11.0.5
+somente nas faixas afetadas por GHSA-3g3m-2fjr-6pw4 e GHSA-g3hv-75wg-m249.
+Expo e Jest permanecem nas mesmas versoes. As cadeias legadas de `glob` 7 e
+`minimatch` 3 nao sao substituidas: nao pertencem a essas faixas e usam APIs
+diferentes das atuais. As versoes corrigidas exigem atualizar a major dessas
+dependencias transitivas; o requisito existente de Node.js 22+ permanece.
+
+Use `npm ci` para reproduzir o lockfile. Ao atualizar Expo/Jest ou remover os
+overrides, confira `npm ls glob minimatch --all`, `npm audit`, typecheck, testes
+com cobertura, exportacao de todas as plataformas e fingerprint do Expo.
+Nao execute `npm audit fix --force`: as sugestoes desta verificacao incluem
+downgrades da stack. Evidencias e o advisory baixo ainda pendente de `deepmerge`
+estao em [Docs/security_checklist.md](../Docs/security_checklist.md).
+
 Regenerar os tipos do banco após uma migration:
 
 ```sh

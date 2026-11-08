@@ -21,6 +21,7 @@ o ambiente hospedado ou o uso com dados reais.
 | E4 | `deno test` dos dois diretorios de funcoes; `deno check` dos dois `index.ts` | 15 testes aprovados e ambas as Edge Functions sem erros de tipos. Dependencias administrativas simuladas nos testes; nao executam delecao real no Auth/Storage. |
 | E5 | `cd mobile && npm audit --json`; `npm audit --omit=dev --json`; `npm ls glob minimatch deepmerge --all` | SCA completa: 24 pacotes sinalizados, 23 moderate e 1 low; 0 high / critical. Omitindo dev: 22 (21 moderate, 1 low). Cadeias de ferramentas Expo/Jest; classificacao do manifesto nao comprova inclusao no bundle nem explorabilidade remota. |
 | E6 | HEAD em `/` e `/confirm-email` no site publicado; HEAD por HTTP | HTTPS 200; `no-referrer`, `nosniff`, `DENY`, `microphone=(self), camera=(), geolocation=()` observados. HTTP redireciona 301 para HTTPS. Nao comprova que o ultimo commit/migration esteja publicado. |
+| E7 | Correcao autorizada de `glob`/`minimatch`, depois do registro inicial | Overrides seletivos, lockfile reinstalado com `npm ci --ignore-scripts`: sem versoes afetadas pelos dois advisories. Typecheck, 46 suites / 219 testes com cobertura, exportacao web/Android/iOS e fingerprint aprovados. Audit completo: 9 low, 0 moderate/high/critical; omit-dev: 7 low, 0 moderate/high/critical. Um unico advisory restante: `deepmerge`. |
 
 Evidencias de codigo/testes:
 [migrations](../supabase/migrations/), [SQL](../supabase/tests/),
@@ -143,9 +144,9 @@ tooling foi removida, sem alterar dependencias neste trabalho.
 | Secrets stored outside repository | PENDENTE | E1: nenhuma credencial identificada no codigo revisado. Conferir secret scanning/historico Git e variaveis administrativas sem imprimir valores. |
 | Backups encrypted | PENDENTE | Confirmar configuracao/garantias do provedor e protecao de qualquer copia exportada. |
 | Dev/staging/prod separated | PENDENTE | Confirmar inventario de projetos, branches e destinos CI/CD. Nome Dev ou rotulo da CLI nao comprova separacao. |
-| SCA executed | APROVADO | E5, sobre a arvore instalada e lockfile da verificacao. Repetir apos mudancas de dependencias. |
-| Critical vulnerabilities = 0 | APROVADO | E5: zero critical no npm audit desta execucao. Nao cobre Deno/npm externo ao lockfile, sistema operacional ou falhas desconhecidas. |
-| High vulnerabilities reviewed | APROVADO | E5: zero high no inventario analisado; alertas moderate/low continuam abertos abaixo. |
+| SCA executed | APROVADO | E5/E7, antes e depois da correcao, sobre arvore instalada e lockfile. Repetir apos mudancas de dependencias. |
+| Critical vulnerabilities = 0 | APROVADO | E7: zero critical no npm audit desta execucao. Nao cobre Deno/npm externo ao lockfile, sistema operacional ou falhas desconhecidas. |
+| High vulnerabilities reviewed | APROVADO | E7: zero high/moderate no inventario analisado; advisory low continua aberto abaixo. |
 | Collected fields are necessary | PENDENTE | Revisar inventario/finalidades/minimizacao com responsavel. Nao coletar CPF nem dados reais em testes. |
 | Terms match actual implementation | PENDENTE | Minuta/previa, sem aceite registrado; revisar recursos, direitos, limitacoes e versao final. |
 | Privacy Policy matches actual data flow | PENDENTE | Documento final/base legal/consentimentos e fornecedores ainda dependem de decisao e revisao adequada. |
@@ -156,23 +157,72 @@ tooling foi removida, sem alterar dependencias neste trabalho.
 | Credential rotation procedure tested | PENDENTE | Planejar rotacao no Dev com inventario de consumidores, rollback e verificacao de chaves antigas. Nenhuma rotacao executada. |
 | Backup restoration tested | PENDENTE | Restaurar somente em projeto isolado autorizado, verificar RLS/Storage e tratamento das exclusoes posteriores ao backup. |
 
-## Alertas de dependencias abertos
+## Dependencias: inventario inicial e tratamento
 
 Sao **tres advisories distintos**, propagados para 24 entradas no inventario.
 Contagem de pacotes nao equivale a 24 vulnerabilidades independentes.
 
 | Severidade npm | Dependencia presente | Advisory | Tratamento |
 |---|---|---|---|
-| moderate | `glob` 13.0.6 (tambem 10.5.0 em cadeias de teste) | [GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4): cancelamento por AbortSignal permite traversal apos timeout | Rever atualizacao compativel das ferramentas Expo/Jest e confirmar uso de inputs nao confiaveis. Nao foi demonstrada exploracao no app. |
-| moderate | `minimatch` 10.2.6 (tambem 9.0.9) | [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249): amplificacao de globparts / DoS | Rever versao corrigida compativel e repetir SCA/testes/build. Nao aplicar override sem verificar APIs e requisitos da stack. |
+| moderate | `glob` 13.0.6 (tambem 10.5.0 em cadeias de teste) | [GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4): cancelamento por AbortSignal permite traversal apos timeout | CORRIGIDO em E7: override seletivo para 14.0.4, sem versoes afetadas no lockfile. Nao foi demonstrada exploracao no app. |
+| moderate | `minimatch` 10.2.6 (tambem 9.0.9) | [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249): amplificacao de globparts / DoS | CORRIGIDO em E7: override seletivo para 11.0.5, SCA/testes/exportacao aprovados. |
 | low | `deepmerge` 4.3.1 via configuracao Jest | [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4): prototype poisoning do objeto retornado | Avaliar atualizacao compativel de tooling; manter configuracoes de testes confiaveis. Nao comprovado como caminho acessivel ao usuario do app. |
 
 Evidencia: [package-lock.json](../mobile/package-lock.json), `npm audit` e
-`npm ls` (E5). Sugestoes automaticas do npm incluem downgrade de Expo/Jest;
+`npm ls` (E5/E7). Sugestoes automaticas do npm incluem downgrade de Expo/Jest;
 nenhuma foi aplicada. Mesmo `--omit=dev` inclui ferramentas por dependencias
 transitivas do Expo; isso nao prova que estejam no JavaScript publicado.
 A analise das dependencias npm das Edge Functions exige inventario separado:
 o `deno check` confirma tipos/resolucao, nao e SCA dessas dependencias.
+
+### Resultado da correcao escolhida
+
+O usuario autorizou corrigir os dois advisories medios. Os overrides em
+[package.json](../mobile/package.json) substituem apenas `glob@>=9.0.0 <=14.0.1`
+por `14.0.4` e `minimatch@>=7.0.0 <11.0.1` por `11.0.5`. Nao houve mudanca das
+dependencias diretas, versoes do Expo/Jest, produto ou backend.
+`path-scurry` passou de 2.0.2 para 3.0.0 como dependencia do `glob` corrigido;
+foi adicionada a dependencia `@isaacs/nonrecursive-glob-match` 1.1.0.
+O npm deduplicou cadeias repetidas.
+
+Essas correcoes estao em novas majors transitivas. A revisao das mudancas
+upstream e os testes cobrem as APIs/padroes usados pelo tooling; nao garantem
+compatibilidade de toda API antiga. `glob` 7.2.3 / `minimatch` 3.1.5 foram
+preservados no preset legado porque usam API diferente e nao estao nas faixas
+destes advisories. O aviso de depreciacao do `glob` 7 continua, sem adicionar
+um finding ao audit desta execucao.
+
+Depois da instalacao limpa, um smoke test encontrou exatamente 46 arquivos de
+teste via glob, conferiu brace matching, exclusao de paths e rejeicao de glob
+com signal previamente abortado. Isso testa compatibilidade de uso, nao mede
+todos os cenarios de cancelamento/DoS dos advisories. A verificacao de seguranca
+tambem conferiu todas as versoes do lockfile contra as faixas vulneraveis.
+
+E7: audit passou de 23 moderate / 1 low para **0 moderate / 9 low**; essas nove
+entradas sao propagacao do unico advisory de `deepmerge`, nao nove falhas
+independentes novas. Sem dev: **0 moderate / 7 low**. `deepmerge` nao foi
+alterado porque ficou fora da correcao escolhida.
+As exportacoes Android/iOS geraram bundles, nao builds nativos instalados
+nem validacao em aparelhos. Nenhuma publicacao remota foi executada.
+
+Comandos adicionais executados em `mobile/`:
+
+```sh
+npm install --ignore-scripts
+npm run typecheck
+npm test -- --runInBand --coverage --coverageDirectory=/tmp/elaconta-security-coverage
+CI=1 npx expo export --platform all --output-dir /tmp/elaconta-security-export
+node -e "require('@expo/fingerprint').createFingerprintAsync(process.cwd()).then(f => console.log(f.sources.length)).catch(e => { console.error(e); process.exitCode = 1; })"
+npm ci --ignore-scripts
+npm audit --json
+npm audit --omit=dev --json
+npm ls glob minimatch --all
+```
+
+Pastas de cobertura/exportacao e arquivos de audit foram temporarios e removidos
+apos verificacao. O requisito de Node.js 22+ permanece; esta execucao usou Node
+24.22.0. Nao foi executado novamente o backend, pois nenhuma migration/funcao
+ou dependencia das Edge Functions foi alterada.
 
 ## Roteiro restante no ambiente Dev
 
@@ -257,5 +307,6 @@ temporario PGlite simulou esses servicos; nao foi introduzida dependencia no
 projeto. Nao rodar fixtures de metadados Storage no Supabase hospedado.
 
 `npm audit` retorna codigo nao zero quando ha alertas: isso nao e falha de coleta.
-Nenhuma dependencia foi alterada nesta verificacao. Este registro nao substitui
+Na coleta inicial E1-E6 nenhuma dependencia foi alterada; E7 registra a correcao
+posterior autorizada. Este registro nao substitui
 validacao juridica, configuracao do provedor, pentest ou autorizacao de lancamento.

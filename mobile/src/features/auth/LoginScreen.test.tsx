@@ -21,6 +21,8 @@ describe('LoginScreen', () => {
 
   it('validates fields before calling the server', async () => {
     await renderLogin();
+    expect(screen.getByText('ElaConta')).toBeTruthy();
+    expect(screen.queryByText('OncoCare')).toBeNull();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Entrar' }));
 

@@ -1,4 +1,4 @@
-// Palette defined for OncoCare (contrast checked against WCAG AA).
+// Palette defined for ElaConta (contrast checked against WCAG AA).
 // rose/petal are decorative only: never use them for text or essential controls.
 export const colors = {
   primary: '#A3325A',

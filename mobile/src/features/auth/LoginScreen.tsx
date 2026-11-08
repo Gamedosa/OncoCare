@@ -42,7 +42,7 @@ export function LoginScreen() {
       <View style={styles.brand}>
         <Image source={require('../../../assets/logo.png')} style={styles.logo} accessible={false} />
         <Text accessibilityRole="header" style={styles.title}>
-          OncoCare
+          ElaConta
         </Text>
         <Text style={styles.subtitle}>Seu diário de cuidado</Text>
       </View>

@@ -47,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         queryClient.clear();
       }
       if (!next || event === 'SIGNED_IN') setRecovering(false);
+      if (event === 'USER_UPDATED') void queryClient.invalidateQueries({ queryKey: ['account', 'contact'] });
       // Drop every cached diary/profile query so nothing leaks to the next account.
       if (!next) queryClient.clear();
     });

@@ -80,4 +80,11 @@ describe('recovery route availability', () => {
     expect(screen.getByText('account deletion gate')).toBeTruthy();
     expect(screen.queryByText('patient')).toBeNull();
   });
+
+  it('keeps the email callback accessible during profile loading', async () => {
+    mockSegments = ['confirm-email'];
+    await render(<RootLayout />);
+    expect(screen.getByText('confirm-email')).toBeTruthy();
+    expect(screen.queryByText('loading gate')).toBeNull();
+  });
 });

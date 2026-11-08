@@ -11,6 +11,7 @@ import { Button, Card, colors, ConfirmDialog, font, Header, Notice, Screen, spac
 
 import { useLinkedPsychologist } from '../hooks';
 import { DeleteAccountPanel } from './DeleteAccountPanel';
+import { EditProfilePanel } from './EditProfilePanel';
 
 const ROLE_LABEL = { patient: 'Paciente', psychologist: 'Psicólogo(a)' } as const;
 
@@ -26,6 +27,7 @@ export function AccountScreen() {
       <Card style={styles.card}>
         <Field label="Nome" value={profile.displayName ?? 'Não informado'} />
         <Field label="Perfil" value={ROLE_LABEL[profile.role]} />
+        <EditProfilePanel profile={profile} />
         {isPatient ? <LinkedPsychologistField patientId={profile.id} /> : null}
       </Card>
 

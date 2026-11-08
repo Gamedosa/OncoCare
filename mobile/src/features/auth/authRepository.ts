@@ -48,6 +48,11 @@ export async function verifyInviteLink(tokenHash: string): Promise<void> {
   if (!data.session) throw new Error('Invite session missing');
 }
 
+export async function verifyEmailChangeLink(tokenHash: string): Promise<void> {
+  const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'email_change' });
+  if (error) throw error;
+}
+
 export async function updatePassword(password: string): Promise<void> {
   const { error } = await supabase.auth.updateUser({ password });
   if (error) throw error;

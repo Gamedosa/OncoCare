@@ -14,7 +14,12 @@ const mockPush = jest.fn();
 
 jest.mock('@/features/auth/AuthProvider', () => ({ useSignedInAuth: () => ({ profile: mockProfile }) }));
 jest.mock('@/features/auth/authRepository', () => ({ signOut: jest.fn() }));
-jest.mock('../accountRepository', () => ({ getLinkedPsychologist: jest.fn() }));
+jest.mock('../accountRepository', () => ({
+  getLinkedPsychologist: jest.fn(),
+  getAccountContact: jest.fn<() => Promise<{ email: string; pendingEmail: null }>>()
+    .mockResolvedValue({ email: 'synthetic@example.test', pendingEmail: null }),
+  updateDisplayName: jest.fn(), requestEmailChange: jest.fn(),
+}));
 jest.mock('@/features/links/linksRepository', () => ({ unlinkPatient: jest.fn() }));
 jest.mock('@/features/patients/patientsRepository', () => ({ listLinkedPatients: jest.fn() }));
 jest.mock('@/features/diary/diaryRepository', () => ({}));

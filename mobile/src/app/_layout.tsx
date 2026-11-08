@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
 import { LoadingScreen, ProfileErrorScreen } from '@/features/auth/GateScreens';
 import { QueryProvider } from '@/shared/query/QueryProvider';
+import { PendingAccountDeletionScreen } from '@/features/account/screens/PendingAccountDeletionScreen';
 
 export default function RootLayout() {
   return (
@@ -24,6 +25,7 @@ function RootNavigator() {
   const isAuthLinkRoute = segments[0] === 'reset-password' || segments[0] === 'accept-invite';
   if (auth.status === 'loading' && !isAuthLinkRoute) return <LoadingScreen />;
   if (auth.status === 'profileError' && !isAuthLinkRoute) return <ProfileErrorScreen onRetry={auth.retry} />;
+  if (auth.status === 'signedIn' && auth.profile.deletionRequestedAt) return <PendingAccountDeletionScreen />;
 
   const role = auth.status === 'signedIn' ? auth.profile.role : null;
   return (

@@ -26,6 +26,11 @@ export async function signOut(): Promise<void> {
   if (error) throw error;
 }
 
+export async function signOutLocally(): Promise<void> {
+  const { error } = await supabase.auth.signOut({ scope: 'local' });
+  if (error) throw error;
+}
+
 export async function requestPasswordReset(email: string): Promise<void> {
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: createURL('/reset-password') });
   if (error) throw error;
@@ -49,7 +54,7 @@ export async function updatePassword(password: string): Promise<void> {
 }
 
 export async function fetchProfile(userId: string): Promise<Profile> {
-  const { data, error } = await supabase.from('profiles').select('id, role, display_name').eq('id', userId).single();
+  const { data, error } = await supabase.from('profiles').select('id, role, display_name, deletion_requested_at').eq('id', userId).single();
   if (error) throw error;
   return profileSchema.parse(data);
 }

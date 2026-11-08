@@ -23,6 +23,10 @@ jest.mock('@/features/auth/GateScreens', () => {
   };
 });
 jest.mock('expo-status-bar', () => ({ StatusBar: () => null }));
+jest.mock('@/features/account/screens/PendingAccountDeletionScreen', () => {
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { PendingAccountDeletionScreen: () => <Text>account deletion gate</Text> };
+});
 jest.mock('expo-router', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const Stack = ({ children }: { children: ReactNode }) => children;
@@ -63,5 +67,17 @@ describe('recovery route availability', () => {
     await render(<RootLayout />);
     expect(screen.getByText('accept-invite')).toBeTruthy();
     expect(screen.queryByText('loading gate')).toBeNull();
+  });
+
+  it('blocks diary navigation while account deletion is pending', async () => {
+    mockAuth = {
+      status: 'signedIn', session: {} as never,
+      profile: { id: '00000000-0000-4000-8000-000000000001', role: 'patient', displayName: null,
+        deletionRequestedAt: '2026-11-07T00:00:00Z' },
+    };
+    mockSegments = ['patient'];
+    await render(<RootLayout />);
+    expect(screen.getByText('account deletion gate')).toBeTruthy();
+    expect(screen.queryByText('patient')).toBeNull();
   });
 });

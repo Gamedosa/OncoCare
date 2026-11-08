@@ -37,7 +37,11 @@ export const profileSchema = z
     id: z.uuid(),
     role: roleSchema,
     display_name: z.string().nullable(),
+    deletion_requested_at: z.string().nullable().optional(),
   })
-  .transform((row) => ({ id: row.id, role: row.role, displayName: row.display_name }));
+  .transform((row) => ({
+    id: row.id, role: row.role, displayName: row.display_name,
+    ...(row.deletion_requested_at ? { deletionRequestedAt: row.deletion_requested_at } : {}),
+  }));
 
 export type Profile = z.output<typeof profileSchema>;

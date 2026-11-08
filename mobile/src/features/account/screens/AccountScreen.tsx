@@ -6,9 +6,11 @@ import { useSignedInAuth } from '@/features/auth/AuthProvider';
 import { useSignOut } from '@/features/auth/hooks';
 import { unlinkErrorMessage } from '@/features/links/errors';
 import { useUnlinkPatient } from '@/features/links/hooks';
+import { useUnreadNotifications } from '@/features/notifications/hooks';
 import { Button, Card, colors, ConfirmDialog, font, Header, Notice, Screen, spacing } from '@/shared/ui';
 
 import { useLinkedPsychologist } from '../hooks';
+import { DeleteAccountPanel } from './DeleteAccountPanel';
 
 const ROLE_LABEL = { patient: 'Paciente', psychologist: 'Psicólogo(a)' } as const;
 
@@ -17,6 +19,7 @@ export function AccountScreen() {
   const { profile } = useSignedInAuth();
   const signOut = useSignOut();
   const isPatient = profile.role === 'patient';
+  const unread = useUnreadNotifications(profile.id);
 
   return (
     <Screen header={<Header title="Conta" onBack={() => router.back()} />}>
@@ -44,6 +47,21 @@ export function AccountScreen() {
         Ver termos de uso (prévia)
       </Button>
 
+      <Card style={styles.card}>
+        <Text accessibilityRole="header" style={styles.section}>Notificações</Text>
+        {unread.isError ? (
+          <>
+            <Notice tone="error">Não foi possível carregar a quantidade de notificações.</Notice>
+            <Button variant="text" onPress={() => void unread.refetch()}>Tentar novamente</Button>
+          </>
+        ) : unread.data !== undefined ? <Text style={styles.text}>{unread.data} não lida(s)</Text> : null}
+        <Button variant="secondary" onPress={() => router.push(isPatient ? '/patient/notifications' : '/psychologist/notifications')}>
+          Ver notificações
+        </Button>
+      </Card>
+
+      <DeleteAccountPanel role={profile.role} />
+      {signOut.isError ? <Notice tone="error">Não foi possível sair. Tente novamente.</Notice> : null}
       <Button variant="secondary" onPress={() => signOut.mutate()} loading={signOut.isPending}>
         Sair
       </Button>
@@ -76,7 +94,7 @@ function LinkedPsychologistField({ patientId }: { patientId: string }) {
         Não foi possível carregar. Tentar novamente
       </Button>
     );
-  else if (!query.data) value = 'Nenhum psicólogo vinculado';
+  else if (!query.data) value = 'Sem vínculo com psicólogo';
   else value = query.data.displayName ?? 'Nome não informado';
   const linkedId = query.data?.id;
   return (

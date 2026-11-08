@@ -18,6 +18,12 @@ jest.mock('../accountRepository', () => ({ getLinkedPsychologist: jest.fn() }));
 jest.mock('@/features/links/linksRepository', () => ({ unlinkPatient: jest.fn() }));
 jest.mock('@/features/patients/patientsRepository', () => ({ listLinkedPatients: jest.fn() }));
 jest.mock('@/features/diary/diaryRepository', () => ({}));
+jest.mock('@/features/notifications/notificationsRepository', () => ({
+  countUnreadNotifications: jest.fn<() => Promise<number>>().mockResolvedValue(2),
+}));
+jest.mock('../deletionRepository', () => ({
+  deleteOwnAccount: jest.fn(), AccountDeletionError: class extends Error {},
+}));
 jest.mock('expo-router', () => ({ useRouter: () => ({ back: jest.fn(), push: mockPush }) }));
 
 const getLinkedPsychologist = jest.mocked(accountRepository.getLinkedPsychologist);
@@ -50,7 +56,7 @@ describe('AccountScreen', () => {
     getLinkedPsychologist.mockResolvedValue(null);
     await renderWithQuery(<AccountScreen />);
 
-    expect(await screen.findByText('Nenhum psicólogo vinculado')).toBeTruthy();
+    expect(await screen.findByText('Sem vínculo com psicólogo')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Encerrar vínculo' })).toBeNull();
   });
 
@@ -86,7 +92,7 @@ describe('AccountScreen', () => {
     await fireEvent.press(buttons[buttons.length - 1]!);
     await waitFor(() => expect(unlinkPatient.mock.calls[0]?.[0]).toEqual({ patientId: PATIENT, psychologistId }));
     expect(await screen.findByText('Vínculo encerrado. Seu diário continua disponível para você.')).toBeTruthy();
-    expect(await screen.findByText('Nenhum psicólogo vinculado')).toBeTruthy();
+    expect(await screen.findByText('Sem vínculo com psicólogo')).toBeTruthy();
   });
 
   it('shows an error when the link changed', async () => {
@@ -99,6 +105,15 @@ describe('AccountScreen', () => {
     await fireEvent.press(buttons[buttons.length - 1]!);
     expect(await screen.findByText(/Este vínculo não está mais disponível/)).toBeTruthy();
   });
+  it.each(['patient', 'psychologist'] as const)('opens notifications for %s', async (role) => {
+    mockProfile = { id: PATIENT, role, displayName: null };
+    getLinkedPsychologist.mockResolvedValue(null);
+    await renderWithQuery(<AccountScreen />);
+    expect(await screen.findByText('2 não lida(s)')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Ver notificações' }));
+    expect(mockPush).toHaveBeenCalledWith(`/${role}/notifications`);
+  });
+
   it('does not look up a link for psychologists and signs out', async () => {
     mockProfile = { id: '00000000-0000-4000-8000-000000000009', role: 'psychologist', displayName: null };
     let completeSignOut: (() => void) | undefined;

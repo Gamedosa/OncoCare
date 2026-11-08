@@ -47,7 +47,7 @@ describe('PatientInvitationsScreen', () => {
     expect(await screen.findByText('Dra. Clara')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Aceitar' }));
     expect(accept).not.toHaveBeenCalled();
-    expect(screen.getByText('Dra. Clara poderá ler e ouvir seus relatos, sem editá-los.')).toBeTruthy();
+    expect(screen.getByText(/incluindo os anteriores ao vínculo e os criados enquanto estiverem vinculados/)).toBeTruthy();
     await pressLast('Aceitar');
     await waitFor(() => expect(accept.mock.calls[0]?.[0]).toBe(invitation.id));
     expect(await screen.findByText('Convite aceito. O acompanhamento começou.')).toBeTruthy();

@@ -8,7 +8,7 @@ Guia para o protótipo no Figma e a implementação em React Native. Reflete as 
 - **Acessibilidade:** fonte base ≥ 16 pt com suporte a fonte ampliada do sistema; contraste WCAG AA; áreas de toque ≥ 44×44 pt; rótulos para leitores de tela; nada comunicado apenas por cor. Considerar fadiga e alterações de sensibilidade/coordenação nas mãos durante o tratamento.
 - **Privacidade:** deixar claro quem pode ver cada informação. Não exibir conteúdo de relatos em notificações, títulos de tela ou prévias fora do app. Protótipos usam apenas nomes e relatos fictícios.
 - **Somente leitura para psicólogos:** nenhuma tela de psicólogo tem ações de criar, editar ou excluir relatos.
-- **Fora do MVP:** notas do psicólogo, alertas/notificações, transcrição de áudio, cadastro público, chat.
+- **Fora do MVP:** notas do psicólogo, alertas clínicos/push, transcrição de áudio, cadastro público, chat. Central interna de notificações e exclusão de conta foram incluídas por solicitação explícita.
 
 ## Mapa de navegação
 
@@ -19,7 +19,9 @@ Login ─┬─ Paciente ── [Consentimento, 1º acesso] ── Histórico �
        └─ Psicólogo ── Pacientes vinculadas ─┬─ Relatos da paciente ── Detalhe (somente leitura)
                                              └─ Convidar paciente (convites pendentes)
 Link do e-mail de convite ── Validar convite ── Criar senha ── Convites
-Ambos: Conta (sair)
+Ambos: Conta (editar nome/e-mail, notificações, termos, excluir conta, sair)
+Históricos: bloco do dia (contagem) → registros do dia → detalhe individual
+Link de troca de e-mail → confirmar link (também no outro endereço, se exigido)
 ```
 
 O app detecta o papel pelo perfil do servidor após o login; não há escolha de papel pela pessoa usuária.
@@ -49,7 +51,13 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 ### C3. Conta
 
 - Nome de exibição, papel, sair.
-- Paciente: nome do psicólogo vinculado (ou "Nenhum psicólogo vinculado") e acesso ao texto de privacidade/consentimento.
+- Nome editável (1–120 caracteres), ação “Salvar nome”. E-mail atual e alteração pendente carregados do Auth; “Solicitar troca de e-mail” exige confirmação nos endereços pelo Supabase. Nome e e-mail têm salvamentos separados e erros explícitos.
+- Paciente: nome do psicólogo vinculado (ou "Sem vínculo com psicólogo"), ação para encerrar o vínculo com confirmação e acesso ao texto de privacidade/consentimento. Sem vínculo, pode continuar criando e editando relatos.
+- Ambos: prévia dos Termos de Uso na conta, identificada como minuta, sem solicitação ou registro de aceite.
+- Seção Notificações com quantidade não lida, acesso à central, estados vazio/erro, paginação e ação “Marcar como lida”. Eventos: convite/resposta/cancelamento, mudanças de vínculo, exclusão do psicólogo, novo relato para o psicólogo e avisos administrativos. Sem dados sensíveis, push/e-mail ou monitoramento clínico.
+- Exclusão da própria conta exige senha atual e confirmação irreversível. Paciente: apagar conta, textos e áudios. Psicólogo: apagar sua conta e encerrar vínculos, preservando pacientes e todos os relatos delas.
+- Falha parcial mostra exclusão pendente com nova tentativa, nunca confirmação de sucesso. Depois de iniciada, o diário não fica disponível; a pessoa pode concluir a limpeza ou sair.
+- Administrador realiza exclusões/publica avisos no painel do Supabase, sem área administrativa no app. Backups e cópias externas são explicados separadamente.
 
 ## Telas da paciente
 
@@ -61,7 +69,8 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 
 ### P2. Histórico de relatos
 
-- Lista em ordem cronológica decrescente: data/hora, humor, trecho do texto e indicador de áudio (ícone + texto "Áudio", não apenas ícone).
+- Blocos por dia em ordem cronológica decrescente no fuso de Brasília (`America/Sao_Paulo`), com data, número discreto de registros e indicação de áudio. Uma única caixa por dia mesmo com mais de 20 relatos; a contagem vem do banco.
+- Ao abrir um bloco, mostrar todos os registros daquele dia (paginados): data/hora, humor, trecho do texto e indicador de áudio. Abrir um registro leva ao detalhe individual; não mesclar textos ou áudios.
 - Botão principal "Novo relato".
 - Estado vazio acolhedor, com convite para o primeiro relato.
 - Paginação/rolagem infinita.
@@ -87,18 +96,18 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 ### P5. Detalhe do relato
 
 - Data/hora de criação e "editado em", humor, texto completo, player (tocar/pausar, avançar/voltar, duração).
-- Ação "Editar".
+- Ações "Editar" e "Excluir relato"; exclusão pede confirmação e remove o acesso ao relato.
 
 ### P6. Editar relato
 
 - Mesmos campos de P3, preenchidos.
 - Áudio: ouvir, substituir (nova gravação) ou remover. Remover só é permitido se houver texto não vazio; caso contrário, explicar que o relato precisa de texto ou áudio.
-- Exclusão de relatos não faz parte do MVP.
+- Exclusão ocorre no detalhe do relato, mediante confirmação.
 
 ### P-Convites. Convites de acompanhamento
 
 - Aviso no topo do histórico quando houver convite pendente.
-- Cada convite mostra o nome do psicólogo, que ele poderá ler e ouvir os relatos sem editá-los e a validade.
+- Cada convite mostra o nome do psicólogo, que ele poderá ler e ouvir todos os relatos e áudios anteriores e futuros enquanto houver vínculo, sem editá-los, e a validade.
 - Se já houver psicólogo vinculado, avisar que aceitar substitui o acompanhamento atual e que o anterior perde o acesso.
 - Aceitar e recusar pedem confirmação. Recusar não afeta o diário nem a conta.
 
@@ -114,11 +123,13 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 ### S2. Relatos da paciente
 
 - Cabeçalho com nome da paciente; lista igual a P2, sem botão de novo relato.
+- Mesmo agrupamento e contagem por dia de Brasília. Abrir o dia lista os registros individuais, mantendo somente leitura.
 
 ### S3. Detalhe do relato (somente leitura)
 
 - Igual a P5, sem "Editar" e sem ações de escrita. Player de áudio disponível.
 - Se o vínculo for removido, a próxima requisição falha: voltar para S1 com mensagem neutra.
+- Ação "Encerrar vínculo" com confirmação: informar que o profissional perderá acesso aos relatos e áudios e que os registros continuam com a paciente.
 
 ### S4. Convidar paciente
 
@@ -146,7 +157,7 @@ Desenhar para cada tela de lista/detalhe e envio:
 | Tema | Pergunta |
 |---|---|
 | Escala de humor | Formato (emoji, escala numérica, palavras) e intervalo. |
-| Desvínculo | Como a paciente ou o psicólogo encerram o vínculo sem um novo convite. Cadastro de psicólogos (hoje manual). |
+| Cadastro de psicólogos | Contas são criadas manualmente; eventual automação e verificação profissional permanecem a definir. |
 | Consentimento | Texto, base legal LGPD, recusa e revogação. |
 | Retenção | Prazo e exclusão de relatos/áudios e da conta. |
 | Emergência | Texto e canais de apoio exibidos no app. |

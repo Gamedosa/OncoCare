@@ -6,7 +6,9 @@ import { excerpt, relativeDay } from '../format';
 import { moodLabel } from '../mood';
 import type { DiaryEntry } from '../schemas';
 
-const time = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' });
+const time = new Intl.DateTimeFormat('pt-BR', {
+  hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo',
+});
 
 export function EntryCard({ entry, onPress }: { entry: DiaryEntry; onPress: () => void }) {
   const mood = moodLabel(entry.mood);

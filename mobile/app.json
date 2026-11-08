@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "OncoCare",
+    "name": "ElaConta",
     "slug": "oncocare",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,7 +11,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FFF1F5",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -29,7 +29,7 @@
       [
         "expo-audio",
         {
-          "microphonePermission": "Permita que o OncoCare use o microfone para gravar seu relato de áudio.",
+          "microphonePermission": "Permita que o ElaConta use o microfone para gravar seu relato de áudio.",
           "recordAudioAndroid": true,
           "enableBackgroundRecording": false,
           "enableBackgroundPlayback": false

@@ -71,7 +71,7 @@ export function AcceptInviteScreen() {
   const activeInvite = verified && auth.status !== 'signedOut';
 
   return (
-    <Screen header={<Header title="Convite OncoCare" />}>
+    <Screen header={<Header title="Convite ElaConta" />}>
       {passwordCreated ? (
         <>
           <Notice tone="success">Senha criada. Agora você pode decidir se aceita o acompanhamento.</Notice>
@@ -88,7 +88,7 @@ export function AcceptInviteScreen() {
         </>
       ) : activeInvite ? (
         <>
-          <Text style={styles.intro}>Crie uma senha com pelo menos 6 caracteres para acessar o OncoCare.</Text>
+          <Text style={styles.intro}>Crie uma senha com pelo menos 6 caracteres para acessar o ElaConta.</Text>
           <TextField
             label="Senha"
             value={password}

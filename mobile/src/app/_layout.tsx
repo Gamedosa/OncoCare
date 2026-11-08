@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
 import { LoadingScreen, ProfileErrorScreen } from '@/features/auth/GateScreens';
 import { QueryProvider } from '@/shared/query/QueryProvider';
+import { PendingAccountDeletionScreen } from '@/features/account/screens/PendingAccountDeletionScreen';
 
 export default function RootLayout() {
   return (
@@ -21,9 +22,10 @@ function RootNavigator() {
   const auth = useAuth();
   const segments = useSegments();
   // Link callbacks keep their screen state while the session or profile changes underneath them.
-  const isAuthLinkRoute = segments[0] === 'reset-password' || segments[0] === 'accept-invite';
+  const isAuthLinkRoute = segments[0] === 'reset-password' || segments[0] === 'accept-invite' || segments[0] === 'confirm-email';
   if (auth.status === 'loading' && !isAuthLinkRoute) return <LoadingScreen />;
   if (auth.status === 'profileError' && !isAuthLinkRoute) return <ProfileErrorScreen onRetry={auth.retry} />;
+  if (auth.status === 'signedIn' && auth.profile.deletionRequestedAt) return <PendingAccountDeletionScreen />;
 
   const role = auth.status === 'signedIn' ? auth.profile.role : null;
   return (
@@ -31,6 +33,7 @@ function RootNavigator() {
       <Stack.Screen name="index" />
       <Stack.Screen name="reset-password" />
       <Stack.Screen name="accept-invite" />
+      <Stack.Screen name="confirm-email" />
       <Stack.Protected guard={role === null && auth.status !== 'passwordRecovery'}>
         <Stack.Screen name="login" />
         <Stack.Screen name="forgot-password" />

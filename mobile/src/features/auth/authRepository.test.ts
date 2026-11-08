@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-import { requestPasswordReset, signOut, updatePassword, verifyInviteLink, verifyRecoveryLink } from './authRepository';
+import { requestPasswordReset, signOut, updatePassword, verifyEmailChangeLink, verifyInviteLink, verifyRecoveryLink } from './authRepository';
 
 const mockReset = jest.fn<(...args: unknown[]) => Promise<{ error: Error | null }>>();
 const mockVerify = jest.fn<(...args: unknown[]) => Promise<{ data: { session: unknown }; error: Error | null }>>();
@@ -47,6 +47,12 @@ describe('password recovery repository', () => {
     const error = new Error('expired');
     mockVerify.mockResolvedValue({ data: { session: null }, error });
     await expect(verifyRecoveryLink('synthetic')).rejects.toBe(error);
+  });
+
+  it('verifies email-change tokens without requiring a session on the first confirmation', async () => {
+    mockVerify.mockResolvedValue({ data: { session: null }, error: null });
+    await verifyEmailChangeLink('synthetic');
+    expect(mockVerify).toHaveBeenCalledWith({ token_hash: 'synthetic', type: 'email_change' });
   });
 
   it('updates the password through Auth and signs out globally', async () => {

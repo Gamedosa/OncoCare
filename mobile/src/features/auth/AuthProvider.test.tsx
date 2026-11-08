@@ -81,4 +81,14 @@ describe('AuthProvider recovery lifecycle', () => {
     await act(async () => listener(invited, 'SIGNED_IN'));
     expect(client.getQueryData(['diary', 'previous-account'])).toBeUndefined();
   });
+
+  it('refreshes the contact details after an Auth email update', async () => {
+    getSession.mockResolvedValue(session);
+    const { client } = await renderWithQuery(<AuthProvider><Status /></AuthProvider>);
+    await screen.findByText('signedIn');
+    const key = ['account', 'contact', session.user.id];
+    client.setQueryData(key, { email: 'synthetic@example.test', pendingEmail: 'new@example.test' });
+    await act(async () => listener({ ...session, user: { ...session.user, email: 'new@example.test' } }, 'USER_UPDATED'));
+    expect(client.getQueryState(key)?.isInvalidated).toBe(true);
+  });
 });

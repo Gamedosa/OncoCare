@@ -90,6 +90,15 @@
         <mxCell id="r_invite_patient" value="recebe 0..*" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none;" edge="1" parent="1" source="cls_patient" target="cls_invitation">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="cls_notification" value="&lt;b&gt;Notification&lt;/b&gt;&lt;hr&gt;+ id, userId: string&lt;br&gt;+ kind, title, body: string&lt;br&gt;+ createdAt: Date&lt;br&gt;+ readAt: Date?&lt;hr&gt;+ marcarComoLida(): void" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="800" y="720" width="300" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="r_notification_user" value="destinatario 1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=none;" edge="1" parent="1" source="cls_user" target="cls_notification">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="account_deletion_note" value="Excluir propria conta: senha atual + confirmacao. Operacao persistente, limpeza Storage e exclusao Auth. Excluir psicologo nao exclui pacientes nem relatos; administrador usa painel Supabase." style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="390" y="760" width="350" height="110" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

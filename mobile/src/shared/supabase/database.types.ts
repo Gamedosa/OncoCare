@@ -17,6 +17,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      notifications: {
+        Row: { id: string; user_id: string; kind: string; title: string; body: string; created_at: string; read_at: string | null }
+        Insert: { id?: string; user_id: string; kind: string; title: string; body: string; created_at?: string; read_at?: string | null }
+        Update: { id?: string; user_id?: string; kind?: string; title?: string; body?: string; created_at?: string; read_at?: string | null }
+        Relationships: [{
+          foreignKeyName: "notifications_user_id_fkey"
+          columns: ["user_id"]
+          isOneToOne: false
+          referencedRelation: "profiles"
+          referencedColumns: ["id"]
+        }]
+      }
+      diary_audio_deletion_queue: {
+        Row: { entry_id: string; patient_id: string; audio_path: string; created_at: string }
+        Insert: { entry_id: string; patient_id: string; audio_path: string; created_at?: string }
+        Update: { entry_id?: string; patient_id?: string; audio_path?: string; created_at?: string }
+        Relationships: []
+      }
       diary_entries: {
         Row: {
           audio_object_id: string | null
@@ -144,18 +162,21 @@ export type Database = {
       }
       profiles: {
         Row: {
+          deletion_requested_at: string | null
           created_at: string
           display_name: string | null
           id: string
           role: Database["public"]["Enums"]["app_role"]
         }
         Insert: {
+          deletion_requested_at?: string | null
           created_at?: string
           display_name?: string | null
           id: string
           role: Database["public"]["Enums"]["app_role"]
         }
         Update: {
+          deletion_requested_at?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -191,6 +212,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      list_diary_days: {
+        Args: { p_patient_id: string; p_before?: string }
+        Returns: { day: string; entry_count: number; has_audio: boolean }[]
+      }
+      list_diary_day_entries: {
+        Args: { p_patient_id: string; p_day: string; p_page?: number }
+        Returns: Database["public"]["Tables"]["diary_entries"]["Row"][]
+      }
+      begin_account_deletion: { Args: { p_user_id: string }; Returns: undefined }
+      list_account_deletion_objects: { Args: { p_user_id: string }; Returns: { bucket_id: string; name: string }[] }
+      mark_notification_read: { Args: { p_notification_id: string }; Returns: undefined }
+      publish_announcement: {
+        Args: { p_title: string; p_body: string; p_role?: Database["public"]["Enums"]["app_role"] | null }
+        Returns: number
+      }
+      delete_own_diary_entry: {
+        Args: { p_entry_id: string }
+        Returns: undefined
+      }
+      finish_diary_audio_deletion: {
+        Args: { p_entry_id: string }
+        Returns: undefined
+      }
       accept_patient_invitation: {
         Args: { p_invitation_id: string }
         Returns: undefined
@@ -227,6 +271,10 @@ export type Database = {
       }
       revoke_patient_invitation: {
         Args: { p_invitation_id: string }
+        Returns: undefined
+      }
+      unlink_patient: {
+        Args: { p_patient_id: string; p_psychologist_id: string }
         Returns: undefined
       }
     }

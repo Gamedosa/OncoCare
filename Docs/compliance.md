@@ -41,9 +41,9 @@ Requisitos:
       as operações.
 - [ ] Informar, em linguagem clara, como os dados são utilizados.
 - [ ] Permitir que a usuária consulte seus dados.
-- [ ] Permitir correção dos dados cadastrais.
+- [x] Permitir correção do nome e alteração de e-mail próprio com confirmação pelo Auth.
 - [ ] Permitir exportação dos registros em formato legível.
-- [ ] Permitir solicitação de exclusão da conta e dos dados.
+- [x] Permitir exclusão da própria conta e dos dados no ambiente ativo com senha e confirmação; administrador também pode excluir pelo painel. Retenção de backups/logs continua pendente.
 - [ ] Informar quais dados podem precisar ser mantidos por obrigação legal.
 - [ ] Definir prazo ou critério de retenção para dados, logs e backups.
 - [ ] Identificar controlador, operadores e fornecedores envolvidos.

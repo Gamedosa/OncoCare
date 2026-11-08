@@ -28,8 +28,10 @@ CI=1 npx expo export --platform web --output-dir /tmp/onco-web  # build web
 
 ### Dependencias transitivas de seguranca
 
-O `package.json` fixa overrides seletivos de `glob` 14.0.4 e `minimatch` 11.0.5
-somente nas faixas afetadas por GHSA-3g3m-2fjr-6pw4 e GHSA-g3hv-75wg-m249.
+O `package.json` fixa `glob` 14.0.4 e `minimatch` 11.0.5 por overrides,
+com excecao explicita para `test-exclude` 6, que usa `glob` 7.2.3 e
+`minimatch` 3.1.5. As cadeias modernas ficam fora das faixas afetadas por
+GHSA-3g3m-2fjr-6pw4 e GHSA-g3hv-75wg-m249.
 Expo e Jest permanecem nas mesmas versoes. As cadeias legadas de `glob` 7 e
 `minimatch` 3 nao sao substituidas: nao pertencem a essas faixas e usam APIs
 diferentes das atuais. As versoes corrigidas exigem atualizar a major dessas
@@ -41,6 +43,13 @@ com cobertura, exportacao de todas as plataformas e fingerprint do Expo.
 Nao execute `npm audit fix --force`: as sugestoes desta verificacao incluem
 downgrades da stack. Evidencias e o advisory baixo ainda pendente de `deepmerge`
 estao em [Docs/security_checklist.md](../Docs/security_checklist.md).
+
+O lockfile e os overrides foram validados com Node.js 22.23.4 / npm 10.9.9,
+usados pelo Cloudflare Pages, e npm 11.19.1. Os seletores anteriores por faixa
+de versao funcionavam no npm 11, mas faziam o npm 10 recalcular cadeias antigas
+e rejeitar o lockfile com `EUSAGE` / `Missing: glob ...`.
+Nao contorne esse erro substituindo `npm ci` por `npm install` no deploy:
+use os dois arquivos atualizados e execute novamente a publicacao.
 
 Regenerar os tipos do banco após uma migration:
 

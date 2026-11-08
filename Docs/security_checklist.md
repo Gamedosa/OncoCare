@@ -22,6 +22,7 @@ o ambiente hospedado ou o uso com dados reais.
 | E5 | `cd mobile && npm audit --json`; `npm audit --omit=dev --json`; `npm ls glob minimatch deepmerge --all` | SCA completa: 24 pacotes sinalizados, 23 moderate e 1 low; 0 high / critical. Omitindo dev: 22 (21 moderate, 1 low). Cadeias de ferramentas Expo/Jest; classificacao do manifesto nao comprova inclusao no bundle nem explorabilidade remota. |
 | E6 | HEAD em `/` e `/confirm-email` no site publicado; HEAD por HTTP | HTTPS 200; `no-referrer`, `nosniff`, `DENY`, `microphone=(self), camera=(), geolocation=()` observados. HTTP redireciona 301 para HTTPS. Nao comprova que o ultimo commit/migration esteja publicado. |
 | E7 | Correcao autorizada de `glob`/`minimatch`, depois do registro inicial | Overrides seletivos, lockfile reinstalado com `npm ci --ignore-scripts`: sem versoes afetadas pelos dois advisories. Typecheck, 46 suites / 219 testes com cobertura, exportacao web/Android/iOS e fingerprint aprovados. Audit completo: 9 low, 0 moderate/high/critical; omit-dev: 7 low, 0 moderate/high/critical. Um unico advisory restante: `deepmerge`. |
+| E8 | Compatibilidade do lockfile com Cloudflare Pages | Falha `EUSAGE` reproduzida com npm 10.9.9. Overrides explicitos de `glob`/`minimatch`, com excecao `test-exclude` 6 para APIs legadas, corrigiram a resolucao. Node 22.23.4 + npm 10.9.9: `npm ci --offline --no-audit`, typecheck, 46 suites / 219 testes, exportacao web e fingerprint aprovados. Audit: 9 low, 0 moderate/high/critical; dependencias diretas e versoes resolvidas preservadas. Deploy remoto nao executado. |
 
 Evidencias de codigo/testes:
 [migrations](../supabase/migrations/), [SQL](../supabase/tests/),
@@ -184,6 +185,23 @@ dependencias diretas, versoes do Expo/Jest, produto ou backend.
 `path-scurry` passou de 2.0.2 para 3.0.0 como dependencia do `glob` corrigido;
 foi adicionada a dependencia `@isaacs/nonrecursive-glob-match` 1.1.0.
 O npm deduplicou cadeias repetidas.
+
+Essa descricao registra a correcao inicial E7. Em E8, os seletores por faixa
+foram substituidos por overrides explicitos `glob: 14.0.4` e
+`minimatch: 11.0.5`, com excecao `test-exclude@^6.0.0` para `glob: 7.2.3` e
+`minimatch: 3.1.5`. O npm 10.9.9 do Cloudflare rejeitava o lockfile validado
+anteriormente apenas no npm 11; a falha de instalacao antecedia o Expo.
+Nao foi removida a protecao contra os advisories nem feito downgrade da stack.
+O lockfile regenerado mantem as versoes de todos os pacotes; a mudanca restante
+e normalizacao de metadados de dependencias opcionais entre versoes do npm.
+
+Validacao E8 usou a versao exata de Node do log hospedado, 22.23.4, e npm
+10.9.9. A instalacao completa (com scripts habilitados) utilizou `--offline`
+com artefatos previamente disponiveis no cache local: uma tentativa de baixar
+`node-forge` existente retornou HTTP 403 do registry neste ambiente.
+Isso limita a verificacao de download online, nao a validacao do lockfile ou
+do build. Nenhum registry alternativo foi usado. No Cloudflare, reexecutar
+`npm ci` e exportacao apos publicar os arquivos corrigidos.
 
 Essas correcoes estao em novas majors transitivas. A revisao das mudancas
 upstream e os testes cobrem as APIs/padroes usados pelo tooling; nao garantem

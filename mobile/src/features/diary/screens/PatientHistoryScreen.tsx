@@ -6,14 +6,14 @@ import { useSignedInAuth } from '@/features/auth/AuthProvider';
 import { InvitationBanner } from '@/features/invitations/screens/InvitationBanner';
 import { Button, Card, colors, EmptyState, font, Header, Notice, Screen, spacing } from '@/shared/ui';
 
-import { EntryList } from '../components/EntryList';
+import { DiaryDayList } from '../components/DiaryDayList';
 import { useCleanDeletedAudio, usePendingAudioDeletions } from '../deletionHooks';
-import { useEntries } from '../hooks';
+import { useDiaryDays } from '../dayHooks';
 
 export function PatientHistoryScreen() {
   const router = useRouter();
   const { profile } = useSignedInAuth();
-  const entries = useEntries(profile.id);
+  const entries = useDiaryDays(profile.id);
   const pending = usePendingAudioDeletions();
   const cleanup = useCleanDeletedAudio();
   const attemptedCleanup = useRef(new Set<string>());
@@ -39,9 +39,9 @@ export function PatientHistoryScreen() {
         />
       }
     >
-      <EntryList
+      <DiaryDayList
         query={entries}
-        onOpen={(entry) => router.push({ pathname: '/patient/entries/[id]', params: { id: entry.id } })}
+        onOpen={(day) => router.push({ pathname: '/patient/days/[day]', params: { day } })}
         header={
           <>
             <InvitationBanner />

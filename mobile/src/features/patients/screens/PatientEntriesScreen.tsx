@@ -2,8 +2,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { EntryList } from '@/features/diary/components/EntryList';
-import { useEntries } from '@/features/diary/hooks';
+import { DiaryDayList } from '@/features/diary/components/DiaryDayList';
+import { useDiaryDays } from '@/features/diary/dayHooks';
 import { useSignedInAuth } from '@/features/auth/AuthProvider';
 import { unlinkErrorMessage } from '@/features/links/errors';
 import { useUnlinkPatient } from '@/features/links/hooks';
@@ -18,7 +18,7 @@ export function PatientEntriesScreen() {
   const { patientId } = useLocalSearchParams<{ patientId: string }>();
   const { profile } = useSignedInAuth();
   const patient = useLinkedPatient(patientId);
-  const entries = useEntries(patientId);
+  const entries = useDiaryDays(patientId);
   const unlink = useUnlinkPatient();
   const [confirming, setConfirming] = useState(false);
 
@@ -57,12 +57,12 @@ export function PatientEntriesScreen() {
 
   return (
     <Screen scroll={false} header={<Header title={patientName(patient.data)} onBack={back} />}>
-      <EntryList
+      <DiaryDayList
         query={entries}
-        onOpen={(entry) =>
+        onOpen={(day) =>
           router.push({
-            pathname: '/psychologist/patients/[patientId]/entries/[id]',
-            params: { patientId, id: entry.id },
+            pathname: '/psychologist/patients/[patientId]/days/[day]',
+            params: { patientId, day },
           })
         }
         header={

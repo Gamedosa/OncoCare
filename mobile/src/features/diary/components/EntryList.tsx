@@ -40,11 +40,11 @@ export function EntryList({ query, onOpen, header, empty }: Props) {
       renderItem={({ item }) => <EntryCard entry={item} onPress={() => onOpen(item)} />}
       ListHeaderComponent={header}
       ListEmptyComponent={empty}
-      ListFooterComponent={
-        query.isFetchingNextPage ? <ActivityIndicator color={colors.primary} style={styles.footer} /> : undefined
-      }
+      ListFooterComponent={query.isError ? (
+        <ErrorState title="Não foi possível atualizar os relatos." onRetry={() => void query.refetch()} />
+      ) : query.isFetchingNextPage ? <ActivityIndicator color={colors.primary} style={styles.footer} /> : undefined}
       onEndReached={() => {
-        if (query.hasNextPage && !query.isFetchingNextPage) void query.fetchNextPage();
+        if (query.hasNextPage && !query.isFetchingNextPage && !query.isError) void query.fetchNextPage();
       }}
       onEndReachedThreshold={0.5}
       refreshControl={

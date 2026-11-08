@@ -4,16 +4,32 @@ const dateTime = new Intl.DateTimeFormat('pt-BR', {
   year: 'numeric',
   hour: '2-digit',
   minute: '2-digit',
+  timeZone: 'America/Sao_Paulo',
 });
 
-const dateOnly = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+const dateOnly = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Sao_Paulo',
+});
+const dayParts = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'America/Sao_Paulo',
+});
+
+export function diaryDayKey(date: Date): string {
+  const parts = dayParts.formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((value) => value.type === type)!.value;
+  return `${part('year')}-${part('month')}-${part('day')}`;
+}
+
+export function formatDiaryDay(day: string): string {
+  return dateOnly.format(new Date(`${day}T12:00:00-03:00`));
+}
 
 export function formatDateTime(date: Date): string {
   return dateTime.format(date);
 }
 
 function startOfDay(date: Date): number {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+  return Date.parse(`${diaryDayKey(date)}T00:00:00Z`);
 }
 
 // Relative label for list headers: "Hoje", "Ontem" or the date.

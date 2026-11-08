@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 
-import * as diaryRepository from '@/features/diary/diaryRepository';
+import * as dayRepository from '@/features/diary/dayRepository';
 import * as linksRepository from '@/features/links/linksRepository';
 import { renderWithQuery } from '@/shared/query/testing';
 
@@ -11,21 +11,23 @@ import { PatientEntriesScreen } from './PatientEntriesScreen';
 const PSYCHOLOGIST = '00000000-0000-4000-8000-000000000009';
 const PATIENT = '00000000-0000-4000-8000-000000000001';
 const mockReplace = jest.fn();
+const mockPush = jest.fn();
 
 jest.mock('@/features/auth/AuthProvider', () => ({
   useSignedInAuth: () => ({ profile: { id: '00000000-0000-4000-8000-000000000009', role: 'psychologist' } }),
 }));
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ back: jest.fn(), push: jest.fn(), dismissTo: jest.fn(), replace: mockReplace }),
+  useRouter: () => ({ back: jest.fn(), push: mockPush, dismissTo: jest.fn(), replace: mockReplace }),
   useLocalSearchParams: () => ({ patientId: '00000000-0000-4000-8000-000000000001' }),
 }));
 jest.mock('../patientsRepository', () => ({ listLinkedPatients: jest.fn() }));
-jest.mock('@/features/diary/diaryRepository', () => ({ listEntries: jest.fn() }));
+jest.mock('@/features/diary/dayRepository', () => ({ listDiaryDays: jest.fn() }));
+jest.mock('@/features/diary/diaryRepository', () => ({}));
 jest.mock('@/features/links/linksRepository', () => ({ unlinkPatient: jest.fn() }));
 jest.mock('@/features/account/accountRepository', () => ({ getLinkedPsychologist: jest.fn() }));
 
 const listLinkedPatients = jest.mocked(patientsRepository.listLinkedPatients);
-const listEntries = jest.mocked(diaryRepository.listEntries);
+const listEntries = jest.mocked(dayRepository.listDiaryDays);
 const unlinkPatient = jest.mocked(linksRepository.unlinkPatient);
 
 describe('PatientEntriesScreen', () => {
@@ -34,20 +36,10 @@ describe('PatientEntriesScreen', () => {
     listEntries.mockReset();
     unlinkPatient.mockReset();
     mockReplace.mockReset();
+    mockPush.mockReset();
     listEntries.mockResolvedValue({
-      entries: [
-        {
-          id: '00000000-0000-4000-8000-000000000010',
-          patientId: PATIENT,
-          content: 'Dia tranquilo.',
-          mood: 4,
-          hasAudio: false,
-          audioPath: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ],
-      nextPage: null,
+      days: [{ day: '2026-11-07', count: 25, hasAudio: false }],
+      nextDay: null,
     });
   });
 
@@ -57,10 +49,15 @@ describe('PatientEntriesScreen', () => {
 
     expect(await screen.findByText('Ana')).toBeTruthy();
     expect(screen.getByText('Visualização somente leitura')).toBeTruthy();
-    expect(await screen.findByText('Dia tranquilo.')).toBeTruthy();
+    expect(await screen.findByText('25 registros')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Novo relato' })).toBeNull();
     expect(listLinkedPatients).toHaveBeenCalledWith(PSYCHOLOGIST);
-    expect(listEntries).toHaveBeenCalledWith(PATIENT, 0);
+    expect(listEntries).toHaveBeenCalledWith(PATIENT, null);
+    await fireEvent.press(screen.getByRole('button', { name: /25 registros/ }));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/psychologist/patients/[patientId]/days/[day]',
+      params: { patientId: PATIENT, day: '2026-11-07' },
+    });
   });
 
   it('shows a neutral message when the patient is no longer linked', async () => {
@@ -69,7 +66,7 @@ describe('PatientEntriesScreen', () => {
 
     expect(await screen.findByText('Este conteúdo não está mais disponível para você.')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Voltar para pacientes' })).toBeTruthy();
-    expect(screen.queryByText('Dia tranquilo.')).toBeNull();
+    expect(screen.queryByText('25 registros')).toBeNull();
   });
 
   it('confirms unlinking before revoking access and returning to the list', async () => {

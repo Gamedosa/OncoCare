@@ -19,11 +19,13 @@ Oferecer um espaço seguro e simples para que pacientes registrem seus sentiment
 - [x] Envio e reprodução de um áudio por relato (até 10 MiB, sem transcrição automática). *Testado na web; validação nativa pendente.*
 - [x] Atualização de relatos existentes pela paciente.
 - [x] Exclusão de relatos próprios pela paciente, com confirmação e limpeza pendente do áudio quando necessário.
+- [x] Exclusão da própria conta com senha atual; pacientes apagam seus registros, psicólogos preservam as contas e relatos das pacientes.
+- [x] Central de notificações em Conta: convites, vínculos, novos relatos e avisos administrativos, com indicação de leitura.
 - [x] Histórico de relatos da paciente.
 - [x] Psicólogo visualiza lista de pacientes vinculadas (somente leitura).
 - [x] Psicólogo lê e ouve os relatos das pacientes vinculadas (somente leitura).
 - [ ] Psicólogo adicionar notas no perfil da paciente (futuro, pós-MVP).
-- [ ] Notificações/alertas para o psicólogo em casos de sinais preocupantes (futuro).
+- [ ] Alertas clínicos para o psicólogo em casos de sinais preocupantes (futuro; não fazem parte da central de notificações).
 
 ## Casos de uso
 
@@ -36,6 +38,8 @@ Oferecer um espaço seguro e simples para que pacientes registrem seus sentiment
 - Excluir um relato próprio.
 - Aceitar ou recusar convite de acompanhamento de um psicólogo.
 - Encerrar o vínculo e continuar usando o diário sem psicólogo.
+- Excluir a própria conta e todos os seus relatos e áudios.
+- Consultar notificações e marcá-las como lidas.
 
 ### Psicólogo
 
@@ -43,6 +47,8 @@ Oferecer um espaço seguro e simples para que pacientes registrem seus sentiment
 - Ver lista de pacientes vinculadas.
 - Ler e ouvir relatos das pacientes vinculadas.
 - Encerrar o vínculo com uma paciente.
+- Excluir a própria conta sem apagar contas, relatos ou áudios das pacientes.
+- Consultar notificações e marcá-las como lidas.
 
 No MVP o psicólogo tem papel **somente de acompanhamento**, sem ações de escrita. A capacidade de adicionar notas no perfil da paciente fica para uma versão futura.
 
@@ -51,7 +57,7 @@ No MVP o psicólogo tem papel **somente de acompanhamento**, sem ações de escr
 | Camada | Escolha | Observações |
 |---|---|---|
 | App | Expo (React Native) + TypeScript | Android, iOS e web a partir do mesmo código. Expo Router, TanStack Query e zod. Ver [mobile/README.md](mobile/README.md). |
-| Backend/API | Supabase como BaaS | O app acessa o Supabase diretamente; a autorização fica no RLS. Sem API própria no MVP; a única Edge Function (`invite-patient`) cria convites, pois exige a API administrativa do Auth. |
+| Backend/API | Supabase como BaaS | O app acessa o Supabase diretamente; a autorização fica no RLS. Sem API própria; Edge Functions `invite-patient` e `delete-account` atendem operações que exigem a API administrativa do Auth. |
 | Banco de dados | PostgreSQL (via Supabase) | Relacional, para suportar vínculos e consultas entre paciente/psicólogo/relatos. |
 | Arquivos de áudio | Supabase Storage | Bucket privado com RLS, sem URLs públicas. |
 | Autenticação | Supabase Auth | E-mail e senha; o papel (paciente/psicólogo) vem de `profiles`. |
@@ -83,6 +89,10 @@ O player está integrado ao detalhe dos dois papéis, com download autenticado. 
 O convite de pacientes está implementado: o psicólogo informa nome e e-mail; contas novas recebem um link para criar a senha; contas existentes veem o convite no app. A paciente aceita (transferindo o vínculo, se já houver outro psicólogo) ou recusa e continua usando o diário. Ao aceitar, compartilha também os relatos e áudios anteriores. Convites valem 7 dias. Não há CPF nem senha provisória. O fluxo principal de convite, relato com áudio e acesso do psicólogo foi testado na web com uma conta de teste. Configuração no Supabase em [mobile/README.md](mobile/README.md#configurar-convites-de-pacientes).
 
 O desvínculo por qualquer uma das partes requer a aplicação da migration `20261107010000_unlink_patient.sql` no ambiente correspondente; sua validação manual após publicação ainda está pendente.
+
+A exclusão de conta e a central de notificações ampliam o MVP por solicitação explícita. Requerem as migrations `20261107030000_account_deletion.sql` e `20261107040000_notifications.sql`, além da publicação de `delete-account`. A exclusão exige senha atual e confirmação; apaga os dados no ambiente ativo e remove arquivos pela API do Storage antes de excluir o usuário do Auth. Falhas de limpeza são informadas e permitem nova tentativa, inclusive pelo administrador no painel. Ao excluir um psicólogo, somente seus vínculos são removidos; pacientes e seus diários permanecem. Procedimento administrativo e publicação em [mobile/README.md](mobile/README.md#exclusão-de-contas-e-notificações).
+
+Notificações são internas ao app, sem push/e-mail ou classificação de risco. Não incluem nomes, e-mails, texto, humor ou áudio dos relatos. A paciente sem psicólogo vê “Sem vínculo com psicólogo” em Conta. Backups, logs e cópias previamente obtidas não são apagados instantaneamente pelo app; política de retenção e procedimentos operacionais continuam pendentes.
 
 As telas, fluxos e estados do aplicativo para o protótipo no Figma estão em [Docs/telas.md](Docs/telas.md).
 

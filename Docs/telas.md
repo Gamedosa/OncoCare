@@ -8,7 +8,7 @@ Guia para o protótipo no Figma e a implementação em React Native. Reflete as 
 - **Acessibilidade:** fonte base ≥ 16 pt com suporte a fonte ampliada do sistema; contraste WCAG AA; áreas de toque ≥ 44×44 pt; rótulos para leitores de tela; nada comunicado apenas por cor. Considerar fadiga e alterações de sensibilidade/coordenação nas mãos durante o tratamento.
 - **Privacidade:** deixar claro quem pode ver cada informação. Não exibir conteúdo de relatos em notificações, títulos de tela ou prévias fora do app. Protótipos usam apenas nomes e relatos fictícios.
 - **Somente leitura para psicólogos:** nenhuma tela de psicólogo tem ações de criar, editar ou excluir relatos.
-- **Fora do MVP:** notas do psicólogo, alertas/notificações, transcrição de áudio, cadastro público, chat.
+- **Fora do MVP:** notas do psicólogo, alertas clínicos/push, transcrição de áudio, cadastro público, chat. Central interna de notificações e exclusão de conta foram incluídas por solicitação explícita.
 
 ## Mapa de navegação
 
@@ -19,7 +19,7 @@ Login ─┬─ Paciente ── [Consentimento, 1º acesso] ── Histórico �
        └─ Psicólogo ── Pacientes vinculadas ─┬─ Relatos da paciente ── Detalhe (somente leitura)
                                              └─ Convidar paciente (convites pendentes)
 Link do e-mail de convite ── Validar convite ── Criar senha ── Convites
-Ambos: Conta (sair)
+Ambos: Conta (notificações, termos, excluir conta, sair)
 ```
 
 O app detecta o papel pelo perfil do servidor após o login; não há escolha de papel pela pessoa usuária.
@@ -49,8 +49,12 @@ O app detecta o papel pelo perfil do servidor após o login; não há escolha de
 ### C3. Conta
 
 - Nome de exibição, papel, sair.
-- Paciente: nome do psicólogo vinculado (ou "Nenhum psicólogo vinculado"), ação para encerrar o vínculo com confirmação e acesso ao texto de privacidade/consentimento. Sem vínculo, pode continuar criando e editando relatos.
+- Paciente: nome do psicólogo vinculado (ou "Sem vínculo com psicólogo"), ação para encerrar o vínculo com confirmação e acesso ao texto de privacidade/consentimento. Sem vínculo, pode continuar criando e editando relatos.
 - Ambos: prévia dos Termos de Uso na conta, identificada como minuta, sem solicitação ou registro de aceite.
+- Seção Notificações com quantidade não lida, acesso à central, estados vazio/erro, paginação e ação “Marcar como lida”. Eventos: convite/resposta/cancelamento, mudanças de vínculo, exclusão do psicólogo, novo relato para o psicólogo e avisos administrativos. Sem dados sensíveis, push/e-mail ou monitoramento clínico.
+- Exclusão da própria conta exige senha atual e confirmação irreversível. Paciente: apagar conta, textos e áudios. Psicólogo: apagar sua conta e encerrar vínculos, preservando pacientes e todos os relatos delas.
+- Falha parcial mostra exclusão pendente com nova tentativa, nunca confirmação de sucesso. Depois de iniciada, o diário não fica disponível; a pessoa pode concluir a limpeza ou sair.
+- Administrador realiza exclusões/publica avisos no painel do Supabase, sem área administrativa no app. Backups e cópias externas são explicados separadamente.
 
 ## Telas da paciente
 

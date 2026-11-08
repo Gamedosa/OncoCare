@@ -47,6 +47,7 @@ src/
     diary/                relatos: domínio, repositório, hooks, componentes e telas da paciente
     patients/             pacientes vinculadas e telas somente leitura do psicólogo
     account/              tela de conta dos dois papéis
+    notifications/        central interna de acontecimentos e avisos, com leitura persistente
     invitations/          convites: envio pelo psicólogo, aceite/recusa pela paciente
     audio/                download autenticado, player e cópias temporárias de áudio
   shared/
@@ -70,7 +71,9 @@ Fluxo de dados: **tela → hooks (TanStack Query) → repositório → Supabase*
 | Paciente: histórico, novo relato, detalhe, edição | Pronto (texto + humor provisório 1–5). |
 | Exclusão de relatos | A paciente exclui no detalhe após confirmação. Áudios ficam em fila persistente até a remoção pelo Storage; o histórico tenta a limpeza e oferece nova tentativa em caso de falha. Requer migration `20261107020000_delete_diary_entry.sql` e validação manual. |
 | Psicólogo: pacientes vinculadas, relatos e detalhe somente leitura | Pronto. |
-| Conta (os dois papéis) | Inclui prévia dos Termos de Uso. Política de privacidade, consentimento e registro de aceite continuam pendentes. |
+| Conta (os dois papéis) | Prévia dos Termos, notificações e exclusão da própria conta com senha/confirmação. Paciente sem vínculo é identificada explicitamente. Política de privacidade, consentimento e registro de aceite continuam pendentes. |
+| Exclusão de conta | Edge Function remove dados próprios e arquivos antes do Auth. Falhas permitem concluir novamente. Excluir psicólogo remove vínculos, nunca contas/relatos das pacientes. Publicação e validação manual pendentes. |
+| Notificações | Central em Conta para convites/respostas/cancelamentos, vínculos/exclusões, novos relatos para o psicólogo e avisos administrativos. RLS própria, paginação, leitura persistente e atualização a cada 30 s enquanto a tela está ativa. Sem push/e-mail nem conteúdo sensível. |
 | Áudio: ouvir | Player integrado ao detalhe dos dois papéis; download autenticado sob demanda, reproduzir/pausar e nova tentativa. Validação em aparelhos ainda pendente. |
 | Áudio: gravar e enviar | Implementado para novos relatos e para adicionar áudio a relatos de texto, com prévia, cancelamento da gravação e recuperação de falhas de envio/escrita. Validação em aparelhos/Storage reais pendente. |
 | Áudio: substituir/remover áudio salvo | Implementado na edição; confirma a alteração no banco antes de excluir o arquivo antigo. Remoção exige texto; falha de limpeza permite nova tentativa sem reenviar. Testes automatizados e typecheck passaram; validação manual pendente. |
@@ -89,6 +92,39 @@ O player não usa URLs públicas/assinadas nem guarda bytes no cache do TanStack
 Em **Conta → Ver termos de uso (prévia)**, ambos os perfis podem consultar a minuta de [`../Docs/TERMOS_DE_USO.md`](../Docs/TERMOS_DE_USO.md). Ela é uma prévia, não solicita nem registra aceite e não substitui a política de privacidade ou consentimentos específicos. Nome ElaConta e responsável são preenchidos apenas na prévia; CPF, contatos, datas e demais informações não definidas permanecem pendentes. O nome técnico do app e os links existentes não foram alterados.
 
 Após atualizar a minuta, execute `npm run sync:terms` em `mobile/` e inclua o `terms.json` gerado. Revise cláusulas, dados, contatos e recursos não implementados com assessoria jurídica antes de apresentar o documento como definitivo ou usar dados reais.
+
+## Exclusão de contas e notificações
+
+1. Confirme o projeto Dev vinculado com `supabase projects list` usando o wrapper Docker da raiz descrito no [README](../README.md).
+2. Execute `supabase db push --remote --dry-run` pelo mesmo wrapper, revise todas as migrations pendentes e aplique somente no ambiente autorizado. As novas migrations são `20261107030000_account_deletion.sql` e `20261107040000_notifications.sql` (a migration anterior de exclusão de relato pode também estar pendente).
+3. Publique `supabase functions deploy delete-account` pelo wrapper e regenere os tipos do banco. A função usa `verify_jwt=false`, mas verifica o JWT do usuário no código e exige a senha da mesma conta no Auth. Credenciais de servidor nunca entram no app.
+4. Publique o app e teste com contas fictícias: senha incorreta, cancelamento, exclusão de paciente com áudio anexado e órfão, exclusão de psicólogo com pacientes, falha/repetição da limpeza e leitura/isolamento das notificações.
+
+Fluxo: `begin_account_deletion` (somente servidor) registra uma operação persistente, marca o perfil e remove o perfil específico do papel. A cascata remove relatos/convites da paciente ou apenas vínculos/convites do psicólogo. O perfil base fica disponível somente para concluir a operação. RLS bloqueia ações e acesso aos áudios durante a exclusão; o app mostra uma tela de conclusão em vez do diário. Uploads autenticados de áudio e exclusões são serializados por lock do perfil para não deixar órfãos de uploads concorrentes. A função remove arquivos por lotes pela API Storage, incluindo órfãos, e só retorna `deleted` depois de excluir o usuário do Auth. O trigger em `auth.users` limpa perfil, notificações e operação pendente. SQL nunca remove metadados do Storage no ambiente hospedado.
+
+Se a limpeza falhar ou exceder o limite por execução, a exclusão é **irreversível e pendente**, não concluída. A pessoa pode repetir com a senha atual; um administrador pode concluir pelo painel. Não há worker automático: operações pendentes precisam de acompanhamento operacional. No SQL Editor, administradores podem consultar `select user_id, requested_at from app_private.account_deletions;` para atender solicitações pendentes, sem registrar esses identificadores em logs públicos.
+
+### Administrador: excluir uma conta pelo painel
+
+Não existe um papel admin no app. No painel do projeto correto, use **Edge Functions → delete-account → Test** para enviar POST com `{"userId":"UUID_DA_CONTA"}` e autenticação de servidor em `Authorization: Bearer <credencial de servidor>`. Essa credencial deve permanecer somente no painel/ambiente administrativo; nunca cole no app, repositório ou conversa. Confirme a conta e a intenção de exclusão antes de enviar. Resposta `{"status":"deleted"}` confirma conclusão; `cleanup_pending` exige nova tentativa com o mesmo UUID.
+
+Prefira esse procedimento a **Authentication → Delete user**, especialmente para pacientes: o Supabase pode impedir exclusão de usuários que possuem arquivos. O trigger também impede deixar arquivos órfãos. A exclusão direta do Auth, quando não há arquivos, limpa os perfis pelo mesmo trigger e preserva pacientes se o usuário for psicólogo. Não exclua apenas uma linha de `profiles` pelo Table Editor.
+
+### Administrador: publicar avisos
+
+No SQL Editor do painel (acesso administrativo):
+
+```sql
+select public.publish_announcement(
+  'Atualização do aplicativo',
+  'Uma nova versão está disponível.',
+  null -- ambos os papéis; ou 'patient' / 'psychologist'
+);
+```
+
+Os avisos são entregues às contas ativas existentes no momento da publicação. Somente o administrador/servidor pode publicar; cada pessoa lê e marca apenas suas próprias notificações. Não inclua dados pessoais ou conteúdo de relatos nos avisos. Eventos são gerados por triggers no servidor, não pelo cliente; edição de um relato não gera um novo aviso.
+
+A exclusão abrange o ambiente ativo. Retenção de backups/logs e cópias fora do app exige uma política e um procedimento próprios; ainda não há prazo definido. HTTPS, bucket privado, RLS e proteção em repouso do provedor continuam obrigatórios; consentimento/base legal não são substituídos pela confirmação de exclusão.
 
 ## Publicar a versão web (Cloudflare Pages)
 

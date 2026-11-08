@@ -77,6 +77,15 @@
         <mxCell id="rel_patient_invitation" value="1..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;startArrow=none;" edge="1" parent="1" source="ent_patient" target="ent_invitation">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="ent_notifications" value="&lt;b&gt;notifications&lt;/b&gt;&lt;hr&gt;PK id&lt;br&gt;FK user_id (profiles, CASCADE)&lt;br&gt;kind, title, body&lt;br&gt;created_at, read_at&lt;hr&gt;RLS: somente destinatario; sem conteudo de relatos" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="800" y="740" width="300" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_user_notifications" value="1 : 0..N" style="edgeStyle=entityRelationEdgeStyle;html=1;endArrow=none;" edge="1" parent="1" source="ent_user" target="ent_notifications">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="deletion_note" value="Exclusao: profiles.deletion_requested_at + app_private.account_deletions(user_id, requested_at). Paciente: CASCADE relatos/convites; psicologo: SET NULL nos vinculos. Storage removido pela API antes do Auth; trigger do Auth limpa profiles." style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="370" y="760" width="400" height="110" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
